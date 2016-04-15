@@ -1,4 +1,5 @@
-# to get sparsebnFit object from the adjacency matrix
+# to get a list of element for sparsebnFit object from the adjacency matrix.
+# "graph" is the adjacency matrix
 get.summary <- function(graph, dataSize, lambda, time) {
   lambda = lambda
   nedge <- sum(graph)
@@ -14,7 +15,8 @@ get.summary <- function(graph, dataSize, lambda, time) {
   return(list(edges = edges, lambda = lambda, nedge = nedge, pp = pp, nn = nn, time = time))
 }
 
-# to change a output solution path of matrix to a list
+# to convert an output solution path to a list of nlam elements
+# each element is a list contains all required items for sparsebnFit
 get.edgeList <- function(edgeMatrix, dataSize, lambda, time) {
   n_node <- ncol(edgeMatrix)
   n_graph <- nrow(edgeMatrix)/n_node
@@ -26,7 +28,8 @@ get.edgeList <- function(edgeMatrix, dataSize, lambda, time) {
   return(edgeList)
 }
 
-# to get obsIndex from a given intervention list (ivn)
+# to get obsIndex from a given intervention list (ivn).
+# if in an observation, all variables are under intervention, return 0.
 get_obsIndex <- function(ivn, node) {
   obsIndex <- vector("list", length = node)
   ind <- 1:node
