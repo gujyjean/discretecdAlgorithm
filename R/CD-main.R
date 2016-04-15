@@ -66,14 +66,18 @@ CD.run <- function(indata, nlevels, eor_nr, eor, weights, fmlam=0.1, nlam=30,
                    as.integer(nlam), as.numeric(eps), as.numeric(convLb),
                    as.numeric(qtol), as.matrix(weights),
                    as.numeric(gamma), as.numeric(upperbound))
-  # just for testing
+
   lambda <- estimate$lambdas
   estimateG <- estimate$estimateG
   time = rep(NA, nlam)
 
   fit <- get.edgeList(estimateG, dataSize, lambda, time)
+  # delete null graphs
+  if_remove <- sapply(fit, function(x) {x$nedge == 0})
+  fit[if_remove] = NULL
+
   fit <- lapply(fit, sparsebnUtils::sparsebnFit)
-  sparsebnUtils::sparsebnPath(fit)
+  fit <- sparsebnUtils::sparsebnPath(fit)
 
   return(fit)
 }
