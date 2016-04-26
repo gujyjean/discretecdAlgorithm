@@ -4,18 +4,14 @@
 \alias{CD.run}
 \title{Learn structure of a discrete network}
 \usage{
-CD.run(data, nlevels, obsIndex_R, eor_nr, eor, weights, fmlam = 0.1,
+CD.run(indata, n_levels, eor = NULL, weights = NULL, fmlam = 0.1,
   nlam = 30, eps = 1e-04, convLb = 0.01, qtol = 1e-04, gamma = 1,
   upperbound = 100)
 }
 \arguments{
-\item{data}{A data matrix}
+\item{indata}{A sparsebnData object}
 
-\item{nlevels}{A vector indicating number of levels for each variable}
-
-\item{obsIndex_R}{Observation index, a vector, has length equal to the data size. Each element indicates which variable is under intervention, if none, use 0.}
-
-\item{eor_nr}{A number indicate the length of the active set}
+\item{n_levels}{A vector indicating number of levels for each variable}
 
 \item{eor}{Active set}
 
