@@ -29,7 +29,7 @@ get.edgeList <- function(edgeMatrix, dataSize, lambda, time) {
 }
 
 # to get obsIndex from a given intervention list (ivn).
-# if in an observation, all variables are under intervention, return 0.
+# if for a node, it is under intervention for all observations, return 0.
 get_obsIndex <- function(ivn, node) {
   obsIndex <- vector("list", length = node)
   ind <- 1:node
@@ -37,7 +37,7 @@ get_obsIndex <- function(ivn, node) {
     if_in <- sapply(ivn, function(y) {x %in% y})
     observation <- 1:length(ivn)
     obsIndex_one <-observation[!if_in]
-    if (length(obsIndex_one)==0) {obsIndex_one == 0L}
+    if (length(obsIndex_one)==0) {obsIndex_one = 0L}
     obsIndex_one
   }, ivn)
   return(obsIndex)

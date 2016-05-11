@@ -11,7 +11,7 @@
         "-I/opt/X11/include",
         "-fPIC"
     ],
-    "hash" : "1460348279",
+    "hash" : "1462253519",
     "is_cpp" : true,
     "pch" : "Rcpp"
 }

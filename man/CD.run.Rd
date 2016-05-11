@@ -4,8 +4,8 @@
 \alias{CD.run}
 \title{Learn structure of a discrete network}
 \usage{
-CD.run(indata, n_levels, eor = NULL, weights = NULL, fmlam = 0.1,
-  nlam = 30, eps = 1e-04, convLb = 0.01, qtol = 1e-04, gamma = 1,
+CD.run(indata, n_levels, weights = NULL, minlam_over_maxlam = 0.1,
+  lambdas.length = 30, error.tol = 1e-04, convLb = 0.01, gamma = 1,
   upperbound = 100)
 }
 \arguments{
@@ -13,12 +13,22 @@ CD.run(indata, n_levels, eor = NULL, weights = NULL, fmlam = 0.1,
 
 \item{n_levels}{A vector indicating number of levels for each variable}
 
-\item{eor}{Active set}
+\item{weights}{Weight matrix}
 
-\item{weights}{weight matrix}
+\item{minlam_over_maxlam}{The ratio of minimum lambda over maximum lambda}
+
+\item{lambdas.length}{Integer number of values to include in the solution path.}
+
+\item{error.tol}{Error tolerance for the algorithm, used to test for convergence.}
+
+\item{convLb}{Small positive number used in Hessian approximation.}
+
+\item{gamma}{A postitive number to scale weight matrix.}
+
+\item{upperbound}{A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.}
 }
 \value{
-A matrix, consist of all the graphs along the solution path.
+A sparsebnPath matrix.
 }
 \description{
 Learn structure of a discrete network

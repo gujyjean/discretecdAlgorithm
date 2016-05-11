@@ -21,24 +21,51 @@ NULL
 #'
 #' @param indata A sparsebnData object
 #' @param n_levels A vector indicating number of levels for each variable
-#' @param eor Active set
-#' @param weights weight matrix
-#' @return A matrix, consist of all the graphs along the solution path.
+#' @param weights Weight matrix
+#' @param minlam_over_maxlam The ratio of minimum lambda over maximum lambda
+#' @param lambdas.length Integer number of values to include in the solution path.
+#' @param error.tol Error tolerance for the algorithm, used to test for convergence.
+#' @param convLb Small positive number used in Hessian approximation.
+#' @param gamma A postitive number to scale weight matrix.
+#' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
+#' @return A sparsebnPath matrix.
 #' @export
-CD.run <- function(indata, n_levels, eor = NULL,
-                   weights = NULL, fmlam=0.1, nlam=30,
-                   eps=0.0001, convLb=0.01, qtol = 0.0001,
-                   gamma=1.0, upperbound = 100.0) {
+CD.run <- function(indata,
+                   n_levels,
+                   weights = NULL,
+                   minlam_over_maxlam=0.1,
+                   lambdas.length=30,
+                   error.tol=0.0001,
+                   convLb=0.01,
+                   gamma=1.0,
+                   upperbound = 100.0) {
 
-  CD_call(indata = indata, n_levels = n_levels,
-          eor = eor, weights = weights, fmlam = fmlam,
-          nlam = nlam, eps = eps, convLb = convLb,
-          qtol = qtol, gamma = gamma, upperbound = upperbound)
+  CD_call(indata = indata,
+          n_levels = n_levels,
+          eor = NULL,
+          weights = weights,
+          fmlam = minlam_over_maxlam,
+          nlam = lambdas.length,
+          eps = error.tol,
+          convLb = convLb,
+          qtol = error.tol,
+          gamma = gamma,
+          upperbound = upperbound)
 
 }
 
 # Convert input to the right form.
-CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qtol, gamma, upperbound) {
+CD_call <- function(indata,
+                    n_levels,
+                    eor,
+                    weights,
+                    fmlam,
+                    nlam,
+                    eps,
+                    convLb,
+                    qtol,
+                    gamma,
+                    upperbound) {
 
   # Allow users to input a data.frame, but kindly warn them about doing this.
   # if the input is a dataframe, the data set is treated as an observational data set.
@@ -60,6 +87,7 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
 
   # Extract the data and the intervention list.
   data_matrix <- data$data
+  data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
 
   # Get the dimensions of the data matrix
@@ -69,10 +97,6 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
   # the input data_matrix should be a matrix
   data_matrix <- as.matrix(data_matrix)
 
-  # check n_levels.
-  if (length(n_levels) != node) {
-    stop("Length of n_levels does not compatible with the input data set. Length of nlevels should be the number of variables.")
-  }
   # element of n_levels should be integer.
   n_levels <- as.integer(n_levels)
 
@@ -81,7 +105,7 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
 
   # make sure that for each observation, at least on node is not under intervention. If all nodes are under intervention, stop and require user to remove that observation.
   ind <- 1:node
-  is_obs_zero <- sapply(obsIndex_R, function(x){length(x)==0})
+  is_obs_zero <- sapply(obsIndex_R, function(x){x==0})
   if(length(ind[is_obs_zero])!=0) {
     stop(sprintf("%d th node has been intervened in all observations, remove this node \n", ind[is_obs_zero]))
   }
@@ -110,6 +134,7 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
   if(is.null(weights)) {
     weights <- matrix(1, node, node)
   }
+  weights <- matrix(as.numeric(weights), ncol = node)
 
   # type conversion for tunning parameters
   node = as.integer(node)
@@ -123,11 +148,21 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
   upperbound = as.numeric(upperbound)
 
   # run CD algorithm
-  estimate <- CD_path(node, dataSize, data_matrix,
-                 n_levels, obsIndex_R, eor_nr,
-                 eor, fmlam, nlam,
-                 eps, convLb, qtol,
-                 weights, gamma, upperbound)
+  estimate <- CD_path(node,
+                      dataSize,
+                      data_matrix,
+                      n_levels,
+                      obsIndex_R,
+                      eor_nr,
+                      eor,
+                      fmlam,
+                      nlam,
+                      eps,
+                      convLb,
+                      qtol,
+                      weights,
+                      gamma,
+                      upperbound)
 
   # extract lambdas
   lambda <- estimate$lambdas
@@ -141,6 +176,7 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
 
   # delete null graphs along the solution path due to upper bound on the number of edges. Now the upper bound is fixed, will let the user to decide the number of maximum number of edges in the future
   if_remove <- sapply(fit, function(x) {x$nedge == 0})
+  if(if_remove[1]==TRUE) {if_remove[1] = FALSE}
   fit[if_remove] = NULL
   # convert element of fit to sparsebnFit object
   fit <- lapply(fit, sparsebnUtils::sparsebnFit)
@@ -153,11 +189,21 @@ CD_call <- function(indata, n_levels, eor, weights, fmlam, nlam, eps, convLb, qt
 
 # a function that directly calls from cpp
 # type check, no converting type of an input at this point
-CD_path <- function(node, dataSize, data_matrix,
-                    n_levels, obsIndex_R, eor_nr,
-                    eor, fmlam, nlam,
-                    eps, convLb, qtol,
-                    weights, gamma, upperbound) {
+CD_path <- function(node,
+                    dataSize,
+                    data_matrix,
+                    n_levels,
+                    obsIndex_R,
+                    eor_nr,
+                    eor,
+                    fmlam,
+                    nlam,
+                    eps,
+                    convLb,
+                    qtol,
+                    weights,
+                    gamma,
+                    upperbound) {
   # check node parameter
   if(!is.integer(node)) stop("node must be a integer!")
   if(node <= 0) stop("node must be a positive integer!")
@@ -168,19 +214,23 @@ CD_path <- function(node, dataSize, data_matrix,
 
   # check data_matrix
   if(node!=ncol(data_matrix) || dataSize!=nrow(data_matrix)) stop("dimension does not match. node should be the number of columns of data matrix, and dataSize should be numbe of rows of data matrix.")
+  if(sum(sapply(data_matrix, function(x){!is.integer(x)}))!=0) stop ("data_matrix has to be a data.frame with integer entries!")
 
   # check n_levels
   if (!is.integer(n_levels)) stop("n_levels must be a vector of integers!")
+  if (length(n_levels)!=node) stop("Length of n_levels does not compatible with the input data set. n_levels must be a vector of length equals to the number of node!")
 
   # check obsIndex_R
   if (!is.list(obsIndex_R)) stop("obsIndex_R must be a list!")
   if (sum(sapply(obsIndex_R, function(x){!is.integer(x)}))!=0) stop("element of obsIndex_R must be a vector of integers!")
+  if (sum(sapply(obsIndex_R, function(x){sum(x<0)}))!=0) stop("element of obsIndex_R must be a positive number!")
+  if (length(obsIndex_R)!=node) stop("obsIndex_R must be a list of length equals to the number of nodes!")
 
   # check eor_nr and eor
   if (!is.integer(eor)) stop("eor must be a vector of integers!")
   if (nrow(eor)==0) stop("eor cannot be empty!")
   if (!is.integer(eor_nr)) stop("eor_nr must be an integer!")
-  if (eor_nr != nrow(eor)) stop("eor_nr must be the numebr of rows of eor!")
+  if (eor_nr != nrow(eor)) stop("eor_nr must be the number of rows of eor!")
 
   # check fmlam
   if (!is.numeric(fmlam)) stop("fmlam must be a numeric number!")
@@ -205,7 +255,8 @@ CD_path <- function(node, dataSize, data_matrix,
 
   # check weights
   if (!is.numeric(weights)) stop("weights must be a numeric matrix!")
-  if (ncol(weights)!=node || nrow(weights)!=node) stop("weigths must be a squred matrix with both number of rows and columns equal to number of variables!")
+  if (is.integer(weights)) stop("weights must not be an integer matrix!")
+  if (ncol(weights)!=node || nrow(weights)!=node) stop("weigths must be a matrix with both number of rows and columns equal to number of variables!")
 
   # check gamma
   if (!is.numeric(gamma)) stop("gamma must be a numeric number!")
@@ -215,11 +266,21 @@ CD_path <- function(node, dataSize, data_matrix,
   if (!is.numeric(upperbound)) stop("upperbound must be a numeric number!")
   if (upperbound <= 0 && upperbound!=-1) stop("upperbound must be a large positive integer to truncate the adaptive weights. Or it can be -1, which indicates that there is no truncation!")
 
-  CD.out <- CD(node, dataSize, data_matrix,
-               n_levels, obsIndex_R, eor_nr,
-               eor, fmlam, nlam,
-               eps, convLb, qtol,
-               weights, gamma, upperbound)
+  CD.out <- CD(node,
+               dataSize,
+               data_matrix,
+               n_levels,
+               obsIndex_R,
+               eor_nr,
+               eor,
+               fmlam,
+               nlam,
+               eps,
+               convLb,
+               qtol,
+               weights,
+               gamma,
+               upperbound)
 
   return(CD.out)
 }

@@ -1255,7 +1255,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 	if(upperbound >= 0.0) // to calculate weights
 	{
 		MatrixXd umtr = MatrixXd::Constant(node, node, pow(upperbound, gamma)); // node by node matrix with elements all equal to upperbound to the power of gamma
-		weights = weights.array().pow(gamma).min(umtr.array()); // to find the minimum one, cannot work
+		weights = weights.array().pow(gamma).min(umtr.array()); // 
 	}
 	else if(upperbound == -1.0) // no truncation
 		weights = weights.array().pow(gamma);
