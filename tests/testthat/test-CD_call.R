@@ -36,7 +36,7 @@ node <- dim(data)[2]
 nlevels <- rep(2, node)
 ivn <- vector("list", length = dataSize)
 ivn <- lapply(ivn, function(x){return(as.integer(0))})
-databn <- sparsebnUtils::sparsebnData(data, ivn, type = "discrete")
+databn <- sparsebnUtils::sparsebnData(data, ivn = ivn, type = "discrete")
 
 # test
 test_that("CD_call runs as expected", {

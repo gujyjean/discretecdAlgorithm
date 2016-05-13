@@ -116,7 +116,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 20,
+                "line" : 21,
                 "name" : "NewtonIterUpdate(const int &, const int &, const int &, const int &, const MatrixXd &, const MatrixXd &, const MatrixXi &, MatrixXd &, MatrixXd &, bool &, const double &, const double &, const double &)",
                 "parent_name" : "",
                 "usr" : "c:@F@NewtonIterUpdate#&1I#S0_#S0_#S0_#&1$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#S1_#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&S2_#S5_#&b#&1d#S7_#S7_#"
@@ -125,7 +125,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 99,
+                "line" : 100,
                 "name" : "NewtonIterTmp(const int &, const int &, const int &, const int &, const MatrixXd &, const MatrixXd &, const MatrixXi &, const MatrixXd &, const MatrixXd &, const bool &, const double &, const double &, const double &, MatrixXd &, MatrixXd &, bool &, bool &)",
                 "parent_name" : "",
                 "usr" : "c:@F@NewtonIterTmp#&1I#S0_#S0_#S0_#&1$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#S1_#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#S1_#S1_#&1b#&1d#S6_#S6_#&S2_#S7_#&b#S8_#"
@@ -134,7 +134,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 194,
+                "line" : 195,
                 "name" : "NewtonIterTmp_GD(const int &, const int &, const int &, const int &, const MatrixXd &, const MatrixXd &, const MatrixXi &, const MatrixXd &, const MatrixXd &, const bool &, const double &, const double &, const double &, MatrixXd &, MatrixXd &, MatrixXd &, MatrixXd &, bool &, bool &)",
                 "parent_name" : "",
                 "usr" : "c:@F@NewtonIterTmp_GD#&1I#S0_#S0_#S0_#&1$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#S1_#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#S1_#S1_#&1b#&1d#S6_#S6_#&S2_#S7_#S7_#S7_#&b#S8_#"
@@ -143,7 +143,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 290,
+                "line" : 291,
                 "name" : "InterceptUpdate(const int &, const MatrixXd &, MatrixXd &, MatrixXd &, const double &, const double &)",
                 "parent_name" : "",
                 "usr" : "c:@F@InterceptUpdate#&1I#&1$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#&S2_#S3_#&1d#S4_#"
@@ -152,7 +152,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 325,
+                "line" : 326,
                 "name" : "dmFetch(MatrixXd &, MatrixXi &, int &, const MatrixXd &, const int &, const int &, const VectorXi &, const VectorXi &, const VectorXd &)",
                 "parent_name" : "",
                 "usr" : "c:@F@dmFetch#&$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#&$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&I#&1S1_#&1I#S6_#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#S7_#&1$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#"
@@ -161,7 +161,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 353,
+                "line" : 354,
                 "name" : "firstDMFetch(MatrixXd &, MatrixXi &, int &, const MatrixXd &, const int &, const int &, const VectorXi &, const VectorXi &, VectorXd &)",
                 "parent_name" : "",
                 "usr" : "c:@F@firstDMFetch#&$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#&$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&I#&1S1_#&1I#S6_#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#S7_#&$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#"
@@ -170,7 +170,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 380,
+                "line" : 381,
                 "name" : "LineSearch_noZero(const int &, MatrixXi &, const int &, const MatrixXi &, vector<int> &, double &, const VectorXi &, const MatrixXi &, const VectorXMXd &, const VectorXMXd &, const VectorXVXi &, VectorXMXd &, MatrixXMXd &, MatrixXb &, const MatrixXd &, const MatrixXd &, const double &, const VectorXVXi &, const MatrixXVXi &, const MatrixXVXd &, const int &, const int &)",
                 "parent_name" : "",
                 "usr" : "c:@F@LineSearch_noZero#&1I#&$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#S0_#&1S2_#&$@N@std@N@__1@C@vector>#I#$@N@std@N@__1@C@allocator>#I#&d#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#S3_#&1$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI1#VI0#VI-1#VI1#S10_#&1$@N@Eigen@C@Matrix>#S9_#VI-1#VI1#VI0#VI-1#VI1#&S11_#&$@N@Eigen@C@Matrix>#S12_#VI-1#VI-1#VI0#VI-1#VI-1#&$@N@Eigen@C@Matrix>#b#VI-1#VI-1#VI0#VI-1#VI-1#&1S12_#S20_#&1d#S13_#&1$@N@Eigen@C@Matrix>#S9_#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#VI-1#VI-1#VI0#VI-1#VI-1#S0_#S0_#"
@@ -179,7 +179,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 653,
+                "line" : 654,
                 "name" : "OneCDLoop(const int &, MatrixXi &, const int &, const MatrixXi &, vector<int> &, double &, const VectorXi &, const MatrixXi &, const VectorXMXd &, const VectorXMXd &, const VectorXVXi &, VectorXMXd &, MatrixXMXd &, MatrixXb &, const MatrixXd &, const MatrixXd &, const double &, const VectorXVXi &, const MatrixXVXi &, const MatrixXVXd &, const int &, const int &)",
                 "parent_name" : "",
                 "usr" : "c:@F@OneCDLoop#&1I#&$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#S0_#&1S2_#&$@N@std@N@__1@C@vector>#I#$@N@std@N@__1@C@allocator>#I#&d#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#S3_#&1$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI1#VI0#VI-1#VI1#S10_#&1$@N@Eigen@C@Matrix>#S9_#VI-1#VI1#VI0#VI-1#VI1#&S11_#&$@N@Eigen@C@Matrix>#S12_#VI-1#VI-1#VI0#VI-1#VI-1#&$@N@Eigen@C@Matrix>#b#VI-1#VI-1#VI0#VI-1#VI-1#&1S12_#S20_#&1d#S13_#&1$@N@Eigen@C@Matrix>#S9_#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#VI-1#VI-1#VI0#VI-1#VI-1#S0_#S0_#"
@@ -188,7 +188,7 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 1172,
+                "line" : 1173,
                 "name" : "CDOnePoint(const int &, MatrixXi &, const int &, const MatrixXi &, const double &, const VectorXi &, const MatrixXi &, const VectorXMXd &, const VectorXMXd &, const VectorXVXi &, VectorXMXd &, MatrixXMXd &, MatrixXb &, const MatrixXd &, const MatrixXd &, const double &, const VectorXVXi &, const MatrixXVXi &, const MatrixXVXd &, const int &, const int &)",
                 "parent_name" : "",
                 "usr" : "c:@F@CDOnePoint#&1I#&$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#S0_#&1S2_#&1d#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#S3_#&1$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI1#VI0#VI-1#VI1#S7_#&1$@N@Eigen@C@Matrix>#S6_#VI-1#VI1#VI0#VI-1#VI1#&S8_#&$@N@Eigen@C@Matrix>#S9_#VI-1#VI-1#VI0#VI-1#VI-1#&$@N@Eigen@C@Matrix>#b#VI-1#VI-1#VI0#VI-1#VI-1#&1S9_#S17_#S4_#S10_#&1$@N@Eigen@C@Matrix>#S6_#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#VI-1#VI-1#VI0#VI-1#VI-1#S0_#S0_#"
@@ -197,14 +197,14 @@
                 "column" : 6,
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
-                "line" : 1252,
+                "line" : 1257,
                 "name" : "CDAlgo(int, int, const MatrixXi &, const VectorXi &, const VectorXVXi &, const MatrixXVXi &, int, const MatrixXi &, double, int, double, double, double, VectorXd &, VectorXd &, VectorXd &, MatrixXMXd &, MatrixXMXd &, MatrixXi &, MatrixXd &, double, double)",
                 "parent_name" : "",
                 "usr" : "c:@F@CDAlgo#I#I#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI-1#VI0#VI-1#VI-1#I#S0_#d#I#d#d#d#&$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#S8_#S8_#&$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI-1#VI0#VI-1#VI-1#S10_#&S1_#&S12_#d#d#"
             }
         ],
         "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
-        "file_last_write" : 1462840039
+        "file_last_write" : 1463180840
     },
     {
         "definitions" : [

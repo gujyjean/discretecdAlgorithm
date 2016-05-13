@@ -32,13 +32,13 @@ data_matrix <- matrix(c(1, 1, 0, 0, 1, 1,
                         0, 0, 1, 0, 0, 0,
                         0, 0, 1, 0, 0, 0), byrow = TRUE, ncol = 6)
 data_matrix <- matrix(as.integer(data_matrix), ncol = 6)
-node = 6; node <- as.integer(node)
-dataSize = 30; dataSize <- as.integer(dataSize)
-n_levels <- rep(2, 6)
+node = ncol(data_matrix); node <- as.integer(node)
+dataSize = nrow(data_matrix); dataSize <- as.integer(dataSize)
+n_levels <- rep(2, node)
 n_levels <- as.integer(n_levels)
 obs <- 1:30
 obsIndex_R <- vector("list", length = 6)
-obsIndex_R <- lapply(obsIndex_R, function(x, obs){as.integer(obs)}, obs)
+obsIndex_R <- lapply(obsIndex_R, function(x, obs){as.integer(obs-1)}, obs)
 eor_nr <- node*(node-1)/2
 eor <- matrix(0, nrow=eor_nr, ncol=2)
 cnt1=1
@@ -52,7 +52,7 @@ for (i in 1:(node-1)) {
 eor_nr <- as.integer(eor_nr)
 eor <- matrix(as.integer(eor), ncol = 2)
 fmlam = 0.1; fmlam <- as.numeric(fmlam)
-nlam = 10; nlam = as.integer(nlam)
+nlam = 30; nlam = as.integer(nlam)
 eps = 0.0001; eps <- as.numeric(eps)
 convLb = 0.01; convLb <- as.numeric(convLb)
 qtol= 0.0001; qtol = as.numeric(qtol)

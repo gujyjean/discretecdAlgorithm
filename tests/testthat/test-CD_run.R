@@ -36,11 +36,17 @@ node <- dim(data)[2]
 nlevels <- rep(2, node)
 ivn <- vector("list", length = dataSize)
 ivn <- lapply(ivn, function(x){return(as.integer(0))})
-databn <- sparsebnUtils::sparsebnData(data, ivn, type = "discrete")
+databn <- sparsebnUtils::sparsebnData(data, ivn = ivn, type = "discrete")
 
 # test
 test_that("Testing default behaviour of CD.run", {
   final <- CD.run(databn, nlevels)
+  # n_length <- length(final)
+  # print(n_length)
+  # print(final[[n_length]]$edges)
+  # print(final[[n_length]]$lambda)
+  # print(final[[n_length]]$nedge)
+
   ### check output type
   expect_is(final, "list")
   expect_is(final, "sparsebnPath")
