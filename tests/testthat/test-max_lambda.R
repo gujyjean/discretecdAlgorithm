@@ -1,4 +1,4 @@
-context("CD_call")
+context("max_lambda")
 
 # set up input variable
 data <- matrix(c(1, 1, 0, 0, 1, 1,
@@ -39,7 +39,13 @@ ivn <- lapply(ivn, function(x){return(as.integer(0))})
 databn <- sparsebnUtils::sparsebnData(data, ivn = ivn, type = "discrete")
 
 # test
-test_that("CD_call runs as expected", {
-  ### no error
-  expect_error(CD_call(databn, nlevels, eor = NULL, weights = NULL, lambda_seq = NULL, fmlam = 0.1, nlam = 30, eps = 0.0001, convLb = 0.01, qtol = 0.0001, gamma = 1, upperbound = 100), NA)
+test_that("Testing behaviour of max_lambda", {
+  ### no error with default setting
+  expect_error(max_lambda(databn, nlevels), NA)
+
+  ### no error with mannual settings
+  weights <- matrix(1, nrow = node, ncol = node)
+  gamma = 1.0
+  upperbound = 100
+  expect_error(max_lambda(databn, nlevels, weights, gamma, upperbound), NA)
 })

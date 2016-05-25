@@ -198,19 +198,28 @@
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
                 "kind" : 6,
                 "line" : 1257,
-                "name" : "CDAlgo(int, int, const MatrixXi &, const VectorXi &, const VectorXVXi &, const MatrixXVXi &, int, const MatrixXi &, double, int, double, double, double, VectorXd &, VectorXd &, VectorXd &, MatrixXMXd &, MatrixXMXd &, MatrixXi &, MatrixXd &, double, double)",
+                "name" : "CDAlgo(int, int, const MatrixXi &, const VectorXi &, const VectorXVXi &, const MatrixXVXi &, int, const MatrixXi &, int, double, double, double, VectorXd &, VectorXd &, VectorXd &, MatrixXMXd &, MatrixXMXd &, MatrixXi &, MatrixXd &, double, double)",
                 "parent_name" : "",
-                "usr" : "c:@F@CDAlgo#I#I#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI-1#VI0#VI-1#VI-1#I#S0_#d#I#d#d#d#&$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#S8_#S8_#&$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI-1#VI0#VI-1#VI-1#S10_#&S1_#&S12_#d#d#"
+                "usr" : "c:@F@CDAlgo#I#I#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI-1#VI0#VI-1#VI-1#I#S0_#I#d#d#d#&$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#S8_#S8_#&$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI-1#VI0#VI-1#VI-1#S10_#&S1_#&S12_#d#d#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
+                "kind" : 6,
+                "line" : 1478,
+                "name" : "maxLambda(int, int, const MatrixXi &, const VectorXi &, const VectorXVXi &, const MatrixXVXi &, MatrixXMXd &, MatrixXd &, double &, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@maxLambda#I#I#&1$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#&1$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI1#VI0#VI-1#VI1#&1$@N@Eigen@C@Matrix>#S3_#VI-1#VI-1#VI0#VI-1#VI-1#&$@N@Eigen@C@Matrix>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI-1#VI-1#VI0#VI-1#VI-1#&S10_#&d#d#d#"
             }
         ],
         "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.cpp",
-        "file_last_write" : 1463180840
+        "file_last_write" : 1463683631
     },
     {
         "definitions" : [
         ],
         "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/dCD.h",
-        "file_last_write" : 1456260800
+        "file_last_write" : 1463682267
     },
     {
         "definitions" : [
@@ -342,12 +351,21 @@
                 "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/wrap.cpp",
                 "kind" : 6,
                 "line" : 31,
-                "name" : "CD(int, int, Eigen::Map<Eigen::MatrixXi>, Eigen::Map<Eigen::VectorXi>, List, int, Eigen::Map<Eigen::MatrixXi>, double, int, double, double, double, Eigen::Map<Eigen::MatrixXd>, double, double)",
+                "name" : "CD(int, int, Eigen::Map<Eigen::MatrixXi>, Eigen::Map<Eigen::VectorXi>, List, int, Eigen::Map<Eigen::MatrixXi>, Eigen::Map<Eigen::VectorXd>, int, double, double, double, Eigen::Map<Eigen::MatrixXd>, double, double)",
                 "parent_name" : "",
-                "usr" : "c:@F@CD#I#I#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#VI0#$@N@Eigen@C@Stride>#VI0#VI0#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#VI0#S2_#$@N@Rcpp@C@Vector>#VI19#@N@Rcpp@CT>1#T@PreserveStorage#I#S0_#d#I#d#d#d#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI0#S2_#d#d#"
+                "usr" : "c:@F@CD#I#I#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#VI0#$@N@Eigen@C@Stride>#VI0#VI0#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#VI0#S2_#$@N@Rcpp@C@Vector>#VI19#@N@Rcpp@CT>1#T@PreserveStorage#I#S0_#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#d#VI-1#VI1#VI0#VI-1#VI1#VI0#S2_#I#d#d#d#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI0#S2_#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/wrap.cpp",
+                "kind" : 6,
+                "line" : 132,
+                "name" : "lambdaMax(int, int, Eigen::Map<Eigen::MatrixXi>, Eigen::Map<Eigen::VectorXi>, List, Eigen::Map<Eigen::MatrixXd>, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@lambdaMax#I#I#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#I#VI-1#VI-1#VI0#VI-1#VI-1#VI0#$@N@Eigen@C@Stride>#VI0#VI0#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#I#VI-1#VI1#VI0#VI-1#VI1#VI0#S2_#$@N@Rcpp@C@Vector>#VI19#@N@Rcpp@CT>1#T@PreserveStorage#$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI0#S2_#d#d#"
             }
         ],
         "file" : "/Users/gujiaying/Documents/STAT-COURSE/qualify/discretecdAlgorithm/discretecdAlgorithm/src/wrap.cpp",
-        "file_last_write" : 1460590936
+        "file_last_write" : 1463683285
     }
 ]

@@ -8,7 +8,7 @@ Description: Structure learning of Bayesian network using coordinate-descent
 License: GPL (>= 2)
 LazyData: TRUE
 Imports:
-    Rcpp, sparsebnUtils
+    Rcpp, sparsebnUtils, nnet
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 5.0.1
 Suggests: testthat

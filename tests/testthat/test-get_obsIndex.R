@@ -1,7 +1,7 @@
 context("get_obsIndex")
 
 # set up input of function get_obsIndex
-node = 5
+node <- 5
 # ivn for observational data
 ivn_obs <- list(0, 0, 0, 0, 0, 0)
 # ivn, when some nodes are under intervention in all observations

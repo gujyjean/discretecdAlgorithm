@@ -35,7 +35,7 @@ List CD( int node,
                     List obsIndex_R,
                     int eor_nr,
                     Eigen::Map<Eigen::MatrixXi> eor,
-                    double fmlam,
+                    Eigen::Map<Eigen::VectorXd> lambda_seq,
                     int nlam,
                     double eps,
                     double convLb,
@@ -74,7 +74,7 @@ List CD( int node,
   MatrixXMXd betaM(node+1, node);
   MatrixXMXd betaN(nlam*(node+1), node);
   Eigen::MatrixXi estimateG = Eigen::MatrixXi::Zero(node*nlam, node);
-  Eigen::VectorXd lambdaSeq(nlam), log_like(nlam), dur(nlam);
+  Eigen::VectorXd log_like(nlam), dur(nlam);
   for (int i = 0; i < nlam; i++) {
     log_like(i) = 0.0;
     dur(i) = 0.0;
@@ -106,11 +106,16 @@ List CD( int node,
     t_nlevels(i) = nlevels(i);
   }
 
+  Eigen::VectorXd lambdaSeq(nlam);
+  for (int i=0; i<nlam; i++) {
+    lambdaSeq(i) = lambda_seq(i);
+  }
+
   // Run CDAlgorithm
 
- CDAlgo(node, dataSize, t_data, t_nlevels, obsIndex, levelIndex, eor_nr, t_eor,
-        fmlam, nlam, eps, convLb, qtol, lambdaSeq, log_like, dur, betaM, betaN,
-        estimateG, t_weights, gamma, upperbound);
+  CDAlgo(node, dataSize, t_data, t_nlevels, obsIndex, levelIndex, eor_nr, t_eor,
+         nlam, eps, convLb, qtol, lambdaSeq, log_like, dur, betaM, betaN,
+         estimateG, t_weights, gamma, upperbound);
 
   IntegerMatrix outputG(node*nlam, node);
   for (int i=0; i<(node*nlam); i++) {
@@ -120,6 +125,74 @@ List CD( int node,
   }
   // should return lambdaSeq, time.
   // return estimateG;
-  return List::create(_["estimateG"] = wrap(estimateG), _["lambdas"] = wrap(lambdaSeq));
+  return List::create(_["estimateG"] = wrap(estimateG), _["time"] = wrap(dur));
+}
+
+// [[Rcpp::export]]
+double lambdaMax( int node,
+         int dataSize,
+         Eigen::Map<Eigen::MatrixXi> data,
+         Eigen::Map<Eigen::VectorXi> nlevels,
+         List obsIndex_R,
+         Eigen::Map<Eigen::MatrixXd> weights,
+         double gamma,
+         double upperbound
+) {
+
+  // convert Rcpp type to C++ type
+  // construct obsIndex
+  VectorXVXi obsIndex(node);
+  for (int i=0; i<node; i++) {
+    obsIndex(i) = obsIndex_R[i];
+  }
+
+  // construct levelIndex
+  MatrixXVXi levelIndex(node, node);
+  for (int i=0; i<node; i++) {
+    for (int j=0; j<node; j++) {
+      if (j != i) {
+        levelIndex(j, i).resize(nlevels[j] - 1);
+        for (int k=0; k<(nlevels[j]-1); k++) {
+          levelIndex(j, i)(k) = k;
+        }
+      }
+      else {
+        levelIndex(j, i).resize(nlevels[j]);
+        for (int k=0; k<nlevels[j]; k++) {
+          levelIndex(j, i)(k) = k;
+        }
+      }
+    }
+  }
+
+  MatrixXMXd betaM(node+1, node);
+  // Eigen::MatrixXi t_data(Rcpp::as< MapMati >(data));
+  Eigen::MatrixXi t_data(dataSize, node);
+  for (int i=0; i<dataSize; i++) {
+    for (int j=0; j<node; j++) {
+      t_data(i, j) = data(i, j);
+    }
+  }
+  Eigen::MatrixXd t_weights(node, node);
+  for (int i=0; i<node; i++) {
+    for (int j=0; j<node; j++) {
+      t_weights(i, j) = weights(i, j);
+    }
+  }
+
+  Eigen::VectorXi t_nlevels(node);
+  for (int i=0; i<node; i++) {
+    t_nlevels(i) = nlevels(i);
+  }
+
+  double lambda = 0.0;
+
+  // Run CDAlgorithm
+
+  maxLambda(node, dataSize, t_data, t_nlevels, obsIndex, levelIndex, betaM, t_weights, lambda, gamma, upperbound);
+
+  // should return lambdaSeq, time.
+  // return estimateG;
+  return lambda;
 }
 

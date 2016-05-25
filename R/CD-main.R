@@ -22,7 +22,7 @@ NULL
 #' @param indata A sparsebnData object
 #' @param n_levels A vector indicating number of levels for each variable
 #' @param weights Weight matrix
-#' @param minlam_over_maxlam The ratio of minimum lambda over maximum lambda
+#' @param lambdas.ratio The ratio of minimum lambda over maximum lambda
 #' @param lambdas.length Integer number of values to include in the solution path.
 #' @param error.tol Error tolerance for the algorithm, used to test for convergence.
 #' @param convLb Small positive number used in Hessian approximation.
@@ -30,10 +30,11 @@ NULL
 #' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 #' @return A sparsebnPath matrix.
 #' @export
-CD.run <- function(indata,
+cd.run <- function(indata,
                    n_levels,
-                   weights = NULL,
-                   minlam_over_maxlam=0.1,
+                   weights=NULL,
+                   lambdas.seq=NULL,
+                   lambdas.ratio=0.1,
                    lambdas.length=30,
                    error.tol=0.0001,
                    convLb=0.01,
@@ -44,7 +45,8 @@ CD.run <- function(indata,
           n_levels = n_levels,
           eor = NULL,
           weights = weights,
-          fmlam = minlam_over_maxlam,
+          lambda_seq = lambdas.seq,
+          fmlam = lambdas.ratio,
           nlam = lambdas.length,
           eps = error.tol,
           convLb = convLb,
@@ -59,6 +61,7 @@ CD_call <- function(indata,
                     n_levels,
                     eor,
                     weights,
+                    lambda_seq,
                     fmlam,
                     nlam,
                     eps,
@@ -71,6 +74,7 @@ CD_call <- function(indata,
   # if the input is a dataframe, the data set is treated as an observational data set.
   # ivn will be initialized to be a list of length dataSize, and every element is 0.
   if(is.data.frame(indata)){
+    dataSize <- nrow(indata)
     warning(sparsebnUtils::alg_input_data_frame())
     ivn <- vector("list", length = dataSize)
     ivn <- lapply(ivn, function(x){
@@ -139,13 +143,27 @@ CD_call <- function(indata,
   # type conversion for tunning parameters
   node = as.integer(node)
   dataSize = as.integer(dataSize)
-  fmlam = as.numeric(fmlam)
-  nlam = as.integer(nlam)
   eps = as.numeric(eps)
   convLb = as.numeric(convLb)
   qtol = as.numeric(qtol)
   gamma = as.numeric(gamma)
   upperbound = as.numeric(upperbound)
+
+  # check/generate lambda sequence
+  if(is.null(lambda_seq)) {
+    lambda_m <- max_lambda(indata,
+                           n_levels,
+                           weights,
+                           gamma,
+                           upperbound)
+    lambda_seq <- generate.lambdas(lambda.max = lambda_m, lambdas.ratio = fmlam, lambdas.length = nlam)
+  }
+  else {
+    nlam = length(lambda_seq)
+  }
+  lambda_seq <- as.numeric(lambda_seq)
+  # fmlam = as.numeric(fmlam)
+  nlam = as.integer(nlam)
 
   # run CD algorithm
   estimate <- CD_path(node,
@@ -155,7 +173,7 @@ CD_call <- function(indata,
                       obsIndex_R,
                       eor_nr,
                       eor,
-                      fmlam,
+                      lambda_seq,
                       nlam,
                       eps,
                       convLb,
@@ -165,14 +183,15 @@ CD_call <- function(indata,
                       upperbound)
 
   # extract lambdas
-  lambda <- estimate$lambdas
+  # lambda <- estimate$lambdas
   # extract adjacency matrix
   estimateG <- estimate$estimateG
   # timing data is not available yet. Fill in NA tempararily.
-  time = rep(NA, nlam)
+  # time = rep(NA, nlam)
+  time <- estimate$time
 
   # convert each element in fit to sparsebnFit object
-  fit <- get.edgeList(estimateG, dataSize, lambda, time)
+  fit <- get.edgeList(estimateG, dataSize, lambda_seq, time)
 
   # delete null graphs along the solution path due to upper bound on the number of edges. Now the upper bound is fixed, will let the user to decide the number of maximum number of edges in the future
   if_remove <- sapply(fit, function(x) {x$nedge == 0})
@@ -196,7 +215,7 @@ CD_path <- function(node,
                     obsIndex_R,
                     eor_nr,
                     eor,
-                    fmlam,
+                    lambda_seq,
                     nlam,
                     eps,
                     convLb,
@@ -232,14 +251,14 @@ CD_path <- function(node,
   if (!is.integer(eor_nr)) stop("eor_nr must be an integer!")
   if (eor_nr != nrow(eor)) stop("eor_nr must be the number of rows of eor!")
 
-  # check fmlam
-  if (!is.numeric(fmlam)) stop("fmlam must be a numeric number!")
-  if (fmlam<0) stop("fmlam cannot be a negative number!")
-  if (fmlam>1) stop("fmlam cannot be bigger than 1!")
+  # check lambda_seq
+  if(!is.numeric(lambda_seq)) stop("lambda_seq must be a numeric vector!")
+  if(sum(lambda_seq<0)>0) stop("lambda_seq must be a non-negative numeric vector!")
 
   # check nlam
   if(!is.integer(nlam)) stop("nlam must be an integer!")
   if(nlam<=0) stop("nlam must be a positive integer!")
+  if(nlam!=length(lambda_seq)) stop("nlam must be the length of lambda_seq!")
 
   # check eps
   if(!is.numeric(eps)) stop("eps must be a numeric number!")
@@ -273,7 +292,7 @@ CD_path <- function(node,
                obsIndex_R,
                eor_nr,
                eor,
-               fmlam,
+               lambda_seq,
                nlam,
                eps,
                convLb,

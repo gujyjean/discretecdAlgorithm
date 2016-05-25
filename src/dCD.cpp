@@ -1254,7 +1254,7 @@ Let's define the jth problem as follows: using node j as the response and all ot
 6. yNZIndex: a p by 1 vector. Each element j is a vector whose hth element is the nonzero level for node j in sample h.
 7. upperbound: a large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 */
-void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, double fmlam, int nlam, double eps, double convLb, double qtol, VectorXd& lambdaSeq, VectorXd& log_like, VectorXd& dur, MatrixXMXd& betaM, MatrixXMXd& betaN, MatrixXi& estimateG, MatrixXd& weights, double gamma, double upperbound)
+void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, int nlam, double eps, double convLb, double qtol, VectorXd& lambdaSeq, VectorXd& log_like, VectorXd& dur, MatrixXMXd& betaM, MatrixXMXd& betaN, MatrixXi& estimateG, MatrixXd& weights, double gamma, double upperbound)
 {
 	int maxRows = dataSize, maxCols = nlevels.maxCoeff(); //nlevels record number of levels for each node.
 	if(upperbound >= 0.0) // to calculate weights
@@ -1358,11 +1358,13 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 		logitM(j) = counts.replicate(nobsVec(j), 1);
 		/*  end initializing intercepts  */
 	}
-	lambdaSeq(0) = lambdaMax;
-	double ratio = pow(fmlam, 1.0 / (nlam - 1));
-	for (int it1 = 1; it1 < nlam; ++it1)
-		lambdaSeq(it1) = lambdaSeq(it1 - 1) * ratio;
-	penalties *= lambdaMax / ratio;
+    // generate lambda seq by CDAlgo.
+//	lambdaSeq(0) = lambdaMax;
+//	double ratio = pow(fmlam, 1.0 / (nlam - 1));
+//	for (int it1 = 1; it1 < nlam; ++it1)
+//		lambdaSeq(it1) = lambdaSeq(it1 - 1) * ratio;
+    // edit penalty. Fei
+//	penalties *= lambdaMax / ratio;
 
 	MatrixXi G = MatrixXi::Zero(node, node);
 	MatrixXd hvals(node + 1, node);
@@ -1410,7 +1412,13 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 			}
 		}
 
-		penalties *= ratio;
+//		penalties *= ratio; // Fei
+        if (it1==0) {
+            penalties *= lambdaSeq[0];
+        }
+        else {
+            penalties *= lambdaSeq[it1]/lambdaSeq[it1-1];
+        }
 
         // to keep record of time
         clock_t start, finish;
@@ -1445,7 +1453,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
         }
 
 
-        duration = (double)(finish - start) / CLOCKS_PER_SEC / 60;
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
 
         dur(it1) = duration;
 
@@ -1465,6 +1473,114 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
             break;
         }
 	}
+}
+
+void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, MatrixXMXd& betaM, MatrixXd& weights, double& lambda, double gamma, double upperbound)
+{
+    int maxRows = dataSize, maxCols = nlevels.maxCoeff(); //nlevels record number of levels for each node.
+    if(upperbound >= 0.0) // to calculate weights
+    {
+        MatrixXd umtr = MatrixXd::Constant(node, node, pow(upperbound, gamma)); // node by node matrix with elements all equal to upperbound to the power of gamma
+        weights = weights.array().pow(gamma).min(umtr.array()); //
+    }
+    else if(upperbound == -1.0) // no truncation
+        weights = weights.array().pow(gamma);
+    else
+        // cout << "upperbound should be positive!" << endl << endl;
+        Rprintf("upperbound sould be positive!");
+    
+    // create the full design matrix dM for each node (including the baseline column which is assumed to be the last factor level)
+    // initialize all relevant information
+    VectorXi nobsVec(node);
+    MatrixXi ndfs(node, node); // p by p matrix. The jth column stores the number of levels for node j and the degrees of freedoms of all other nodes for the jth problem.
+    MatrixXd penalties(node, node);
+    VectorXMXd dM(node), yM(node);
+    VectorXVXi yNZIndex(node); //p by 1 vector. Each element j is a vector whose hth element is the nonzero level for node j in sample h
+    MatrixXVXd scales(node, node);
+    for (int it1 = 0; it1 < node; ++it1) // it1 -> i
+    {
+        int size;
+        nobsVec(it1) = obsIndex(it1).size(); // ith element is the number of observations for the ith problem
+        for (int it2 = 0; it2 < node; ++it2) // it2 -> j
+        {
+            ndfs(it2, it1) = size = levelIndex(it2, it1).size();
+            scales(it2, it1) = VectorXd::Zero(size);
+        }
+        dM(it1) = MatrixXd::Zero(dataSize, nlevels(it1));// design matrix for each node, the ith element is the matrix that indicate which level the ith node have
+        yM(it1) = MatrixXd::Zero(nobsVec(it1), ndfs(it1, it1)); // ith element is a matrix record that rows are for the observations of ith problem, colums are for levels of ith node.
+        yNZIndex(it1) = VectorXi::Zero(nobsVec(it1));
+        penalties.col(it1) = (ndfs.col(it1) * ndfs(it1, it1)).cast<double>().cwiseSqrt();
+    }
+    penalties = penalties.array() * weights.array();	// Adaptive Lasso weights
+    for (int it1 = 0; it1 < dataSize; ++it1) // i to determine design matrix
+    {
+        for (int it2 = 0; it2 < node; ++it2) // j
+            dM(it2)(it1, data(it1, it2)) = 1.0;
+    }
+    for (int it1 = 0; it1 < node; ++it1) // to
+    {
+        int nrows = nobsVec(it1), ncols = ndfs(it1, it1); // number of observations fro the ith problem, number of levels for the ith node
+        double value;
+        const VectorXi& oind = obsIndex(it1); //ordered observational sample indices for the ith problem
+        const VectorXi& lind = levelIndex(it1, it1); // ordered levels of node i, that should be included in the design matrix fot the ith problem
+        const MatrixXd& dm = dM(it1);
+        for (int it2 = 0; it2 < nrows; ++it2)
+        {
+            for (int it3 = 0; it3 < ncols; ++it3)
+            {
+                value = dm(oind(it2), lind(it3));
+                yM(it1)(it2, it3) = value;
+                if (value != 0)
+                    yNZIndex(it1)(it2) = it3;
+            }
+        }
+    }
+    
+    
+    
+    // compute the maximum lambda and sequence of lambdas
+    // initialize betaM
+    double lambdaMax = 0.0;
+    VectorXMXd logitM(node);
+    MatrixXb IsBetaZeros(node, node);
+    for (int j = 0; j < node; ++j)
+    {
+        MatrixXd yMp = yM(j);
+        RowVectorXd colMean = yMp.colwise().mean();
+        yMp.rowwise() -= colMean;
+        
+        int rCount, di, rj = ndfs(j, j), rInd, cInd;
+        MatrixXd dmt(maxRows, maxCols);
+        MatrixXi nzIndt(maxRows * maxCols, 2);
+        for (int i = 0; i < node; ++i)
+        {
+            if(i != j)
+            {
+                di = ndfs(i, j);
+                betaM(i, j) = MatrixXd::Zero(di, rj);
+                IsBetaZeros(i, j) = true;
+                firstDMFetch(dmt, nzIndt, rCount, dM(i), nobsVec(j), ndfs(i, j), obsIndex(j), levelIndex(i, j), scales(i, j));
+                MatrixXd grad = MatrixXd::Zero(di, rj);
+                for (int it1 = 0; it1 < rCount; ++it1)
+                {
+                    rInd = nzIndt(it1, 0);
+                    cInd = nzIndt(it1, 1);
+                    grad.row(cInd) +=  yMp.row(rInd) * dmt(rInd, cInd);
+                }
+                lambdaMax = max(lambdaMax, grad.norm()/penalties(i, j));
+            }
+        }
+        /*  begin initializing intercepts  */
+        RowVectorXd counts = yM(j).colwise().sum();
+        counts /= counts(0);
+        counts = counts.array().log();
+        counts(0) = 0.0;
+        betaM(node, j) = counts;
+        logitM(j) = counts.replicate(nobsVec(j), 1);
+        /*  end initializing intercepts  */
+    }
+    
+    lambda = lambdaMax;
 }
 
 

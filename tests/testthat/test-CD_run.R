@@ -1,4 +1,4 @@
-context("CD.run")
+context("cd.run")
 
 # set up input variable
 data <- matrix(c(1, 1, 0, 0, 1, 1,
@@ -39,8 +39,8 @@ ivn <- lapply(ivn, function(x){return(as.integer(0))})
 databn <- sparsebnUtils::sparsebnData(data, ivn = ivn, type = "discrete")
 
 # test
-test_that("Testing default behaviour of CD.run", {
-  final <- CD.run(databn, nlevels)
+test_that("Testing default behaviour of cd.run", {
+  final <- cd.run(databn, nlevels)
   # n_length <- length(final)
   # print(n_length)
   # print(final[[n_length]]$edges)
@@ -64,9 +64,9 @@ test_that("Testing default behaviour of CD.run", {
   }
 })
 
-test_that("Testing ccdr.run with manual settings", {
+test_that("Testing cd.run with manual settings", {
   weights <- matrix(1.5, nrow=node, ncol=node)
-  final <- CD.run(databn, nlevels, weights = weights, minlam_over_maxlam =0.3, lambdas.length=10, error.tol=0.0003, convLb=0.02, gamma=1.5, upperbound = 300.0)
+  final <- cd.run(databn, nlevels, weights = weights, lambdas.ratio =0.3, lambdas.length=10, error.tol=0.0003, convLb=0.02, gamma=1.5, upperbound = 300.0)
 
   ### check output type
   expect_is(final, "list")
