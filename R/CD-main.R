@@ -19,10 +19,10 @@ NULL
 
 #' Learn structure of a discrete network
 #'
-#' @param indata A sparsebnData object
-#' @param n_levels A vector indicating number of levels for each variable
-#' @param weights Weight matrix
-#' @param lambdas.ratio The ratio of minimum lambda over maximum lambda
+#' @param indata A sparsebnData object.
+#' @param weights Weight matrix.
+#' @param lambdas.seq Numeric vector containing a grid of lambda values (i.e. regularization parameters) to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
+#' @param lambdas.ratio The ratio of minimum lambda over maximum lambda.
 #' @param lambdas.length Integer number of values to include in the solution path.
 #' @param error.tol Error tolerance for the algorithm, used to test for convergence.
 #' @param convLb Small positive number used in Hessian approximation.
@@ -31,7 +31,6 @@ NULL
 #' @return A sparsebnPath matrix.
 #' @export
 cd.run <- function(indata,
-                   n_levels,
                    weights=NULL,
                    lambdas.seq=NULL,
                    lambdas.ratio=0.1,
@@ -42,7 +41,6 @@ cd.run <- function(indata,
                    upperbound = 100.0) {
 
   CD_call(indata = indata,
-          n_levels = n_levels,
           eor = NULL,
           weights = weights,
           lambda_seq = lambdas.seq,
@@ -58,7 +56,6 @@ cd.run <- function(indata,
 
 # Convert input to the right form.
 CD_call <- function(indata,
-                    n_levels,
                     eor,
                     weights,
                     lambda_seq,
@@ -74,13 +71,13 @@ CD_call <- function(indata,
   # if the input is a dataframe, the data set is treated as an observational data set.
   # ivn will be initialized to be a list of length dataSize, and every element is 0.
   if(is.data.frame(indata)){
-    dataSize <- nrow(indata)
     warning(sparsebnUtils::alg_input_data_frame())
+    dataSize <- nrow(indata)
     ivn <- vector("list", length = dataSize)
     ivn <- lapply(ivn, function(x){
       return(c(0L))
     })
-    data <- sparsebnUtils::sparsebnData(indata, ivn, type = "discrete")
+    data <- sparsebnUtils::sparsebnData(indata, ivn = ivn, type = "discrete")
   }
   else {
     data <- indata
@@ -93,6 +90,7 @@ CD_call <- function(indata,
   data_matrix <- data$data
   data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
+  data_level <- data$levels
 
   # Get the dimensions of the data matrix
   dataSize <- nrow(data_matrix)
@@ -101,8 +99,8 @@ CD_call <- function(indata,
   # the input data_matrix should be a matrix
   data_matrix <- as.matrix(data_matrix)
 
-  # element of n_levels should be integer.
-  n_levels <- as.integer(n_levels)
+  # get n_levels.
+  n_levels <- as.integer(as.vector(unlist(data_level)))
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)
@@ -152,7 +150,6 @@ CD_call <- function(indata,
   # check/generate lambda sequence
   if(is.null(lambda_seq)) {
     lambda_m <- max_lambda(indata,
-                           n_levels,
                            weights,
                            gamma,
                            upperbound)

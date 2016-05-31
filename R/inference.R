@@ -5,8 +5,10 @@ get_coef_matrix <- function(coef_vec, n_levels) {
   # a vector to index each coefficient in coef_vec
   node_index <- rep(node, (n_levels-1))
   if (!is.matrix(coef_vec)) {coef_vec <- matrix(coef_vec, nrow=1)}
+  # check if number of columns of coef_vec is compatible with n_levels
+  if (ncol(coef_vec)!=sum(n_levels-1)) stop("number of columns of coef_vec is not compatible with n_levels")
   if (length(n_levels) >=2) {
-    coef_matrix <- lapply(node, function(x, node_index, coef_vec){matrix(coef_vec[, which(node_index==x)], nrow = nrow(coef_vec))}, node_index, coef_vec)
+    coef_matrix <- lapply(node, function(x, node_index, coef_vec){matrix(coef_vec[, which(node_index==x)], nrow=nrow(coef_vec))}, node_index, coef_vec)
   } else {
     coef_matrix <- list(coef_vec)
   }
@@ -34,7 +36,7 @@ fit_dag <- function(parents,
 
   # get adjacency matrix
   ### if parents is an edgeList object
-  if (is.edgeList(parents) || is.sparsebnFit(parents)) {
+  if (sparsebnUtils::is.edgeList(parents) || sparsebnUtils::is.sparsebnFit(parents)) {
     adjMatrix <- sparsebnUtils::get.adjacency.matrix(parents)
   }
   ### if parents is an adjacency matrix
@@ -43,7 +45,7 @@ fit_dag <- function(parents,
     adjMatrix <- parents
   }
   ### throw an error if parents is neither an adjacency matrix nor an edgeList object
-  if (!(is.edgeList(parents) || is.sparsebnFit(parents) || is.matrix(parents))) stop("parents must be an edgeList object or sparsebnFit object or an adjacency matrix!")
+  if (!(sparsebnUtils::is.edgeList(parents) || sparsebnUtils::is.sparsebnFit(parents) || is.matrix(parents))) stop("parents must be an edgeList object or sparsebnFit object or an adjacency matrix!")
 
   # subtract dependent and independent variables for each regression
   coef <- vector("list", length = node)
@@ -59,7 +61,7 @@ fit_dag <- function(parents,
       coef_vec <- coef_vec[-1]
       coef_seq <- get_coef_matrix(coef_vec, temp_n_levels)
       node_index <- 1:length(x_ind)
-      coef[[i]] <- lapply(node_index, function(x, coef_seq, x_ind){list(child=x_ind[x], coef=coef_seq[[x]])}, coef_seq, x_ind)
+      coef[[i]] <- lapply(node_index, function(x, coef_seq, x_ind){list(parent=x_ind[x], coef=coef_seq[[x]])}, coef_seq, x_ind)
       coef[[i]][[length(x_ind)+1]] <- list(intercept=intercept)
     }
   }

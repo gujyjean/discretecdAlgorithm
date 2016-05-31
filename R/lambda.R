@@ -1,20 +1,17 @@
 #' A method to calculate the value of maximum lambda along a solution path
 #'
 #' @param indata A sparsebnData object
-#' @param n_levels A vector indicating number of levels for each variable
 #' @param weights Weight matrix
 #' @param gamma A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 #' @return The maximum lambda along the solution path.
 #' @export
 max_lambda <- function(indata,
-                   n_levels,
                    weights = NULL,
                    gamma=1.0,
                    upperbound = 100.0) {
 
   lambda_call(indata = indata,
-          n_levels = n_levels,
           weights = weights,
           gamma = gamma,
           upperbound = upperbound)
@@ -23,7 +20,6 @@ max_lambda <- function(indata,
 
 # Convert input to the right form.
 lambda_call <- function(indata,
-                    n_levels,
                     weights,
                     gamma,
                     upperbound) {
@@ -51,6 +47,7 @@ lambda_call <- function(indata,
   data_matrix <- data$data
   data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
+  data_level <- data$levels
 
   # Get the dimensions of the data matrix
   dataSize <- nrow(data_matrix)
@@ -59,8 +56,8 @@ lambda_call <- function(indata,
   # the input data_matrix should be a matrix
   data_matrix <- as.matrix(data_matrix)
 
-  # element of n_levels should be integer.
-  n_levels <- as.integer(n_levels)
+  # get n_levels.
+  n_levels <- as.integer(as.vector(unlist(data_level)))
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)

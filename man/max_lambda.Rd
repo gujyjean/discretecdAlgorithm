@@ -4,12 +4,10 @@
 \alias{max_lambda}
 \title{A method to calculate the value of maximum lambda along a solution path}
 \usage{
-max_lambda(indata, n_levels, weights = NULL, gamma = 1, upperbound = 100)
+max_lambda(indata, weights = NULL, gamma = 1, upperbound = 100)
 }
 \arguments{
 \item{indata}{A sparsebnData object}
-
-\item{n_levels}{A vector indicating number of levels for each variable}
 
 \item{weights}{Weight matrix}
 

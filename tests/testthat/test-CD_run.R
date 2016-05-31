@@ -33,14 +33,13 @@ data <- matrix(c(1, 1, 0, 0, 1, 1,
                  0, 0, 1, 0, 0, 0), byrow = TRUE, ncol = 6)
 dataSize <- dim(data)[1]
 node <- dim(data)[2]
-nlevels <- rep(2, node)
 ivn <- vector("list", length = dataSize)
 ivn <- lapply(ivn, function(x){return(as.integer(0))})
 databn <- sparsebnUtils::sparsebnData(data, ivn = ivn, type = "discrete")
 
 # test
 test_that("Testing default behaviour of cd.run", {
-  final <- cd.run(databn, nlevels)
+  final <- cd.run(databn)
   # n_length <- length(final)
   # print(n_length)
   # print(final[[n_length]]$edges)
@@ -66,7 +65,7 @@ test_that("Testing default behaviour of cd.run", {
 
 test_that("Testing cd.run with manual settings", {
   weights <- matrix(1.5, nrow=node, ncol=node)
-  final <- cd.run(databn, nlevels, weights = weights, lambdas.ratio =0.3, lambdas.length=10, error.tol=0.0003, convLb=0.02, gamma=1.5, upperbound = 300.0)
+  final <- cd.run(databn, weights = weights, lambdas.ratio =0.3, lambdas.length=10, error.tol=0.0003, convLb=0.02, gamma=1.5, upperbound = 300.0)
 
   ### check output type
   expect_is(final, "list")

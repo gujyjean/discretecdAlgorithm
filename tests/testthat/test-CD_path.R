@@ -62,7 +62,7 @@ upperbound <- 100; upperbound <- as.numeric(upperbound)
 ivn <- vector("list", length = dataSize)
 ivn <- lapply(ivn, function(x){return(as.integer(0))})
 databn <- sparsebnUtils::sparsebnData(as.data.frame(data_matrix), ivn = ivn, type = "discrete")
-lambda_m <- max_lambda(databn, n_levels, weights, gamma, upperbound)
+lambda_m <- max_lambda(databn, weights, gamma, upperbound)
 lambda_seq <- generate.lambdas(lambda.max = lambda_m, lambdas.ratio = fmlam, lambdas.length = nlam)
 lambda_seq <- as.numeric(lambda_seq)
 
