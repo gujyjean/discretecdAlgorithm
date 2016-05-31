@@ -40,12 +40,12 @@ fit_dag <- function(parents,
     adjMatrix <- sparsebnUtils::get.adjacency.matrix(parents)
   }
   ### if parents is an adjacency matrix
-  if (is.matrix(parents)) {
+  if (is.matrix(parents) || class(parents) == "dgCMatrix") {
     if (sum(((parents!=0)+(parents!=1))!=1)) stop("input matrix must be an adjacency matrix, where 1 means there exists an edge and 0 means there is no edge!")
     adjMatrix <- parents
   }
   ### throw an error if parents is neither an adjacency matrix nor an edgeList object
-  if (!(sparsebnUtils::is.edgeList(parents) || sparsebnUtils::is.sparsebnFit(parents) || is.matrix(parents))) stop("parents must be an edgeList object or sparsebnFit object or an adjacency matrix!")
+  if (!(sparsebnUtils::is.edgeList(parents) || sparsebnUtils::is.sparsebnFit(parents) || is.matrix(parents) || class(parents) == "dgCMatrix")) stop("parents must be an edgeList object or sparsebnFit object or an adjacency matrix!")
 
   # subtract dependent and independent variables for each regression
   coef <- vector("list", length = node)
