@@ -153,28 +153,3 @@ calc_lambda <- function(node,
 
   return(max_lambda)
 }
-
-#' Function to generate lambda sequence
-#' @param lambda.max Maximum lambda.
-#' @param lambdas.ratio Ratio of minimum lambda over maximum lambda.
-#' @param lambdas.length Length of the lambda sequence.
-#' @export
-generate.lambdas <- function(lambda.max,
-                             lambdas.ratio = 0.01,
-                             lambdas.length = 30){
-  lambda.min <- lambdas.ratio * lambda.max
-  gen_lambdas(lambda.max = lambda.max,
-              lambda.min = lambda.min,
-              lambdas.length = lambdas.length)
-}
-
-# gen_lambdas
-#  Internal implementation of generate.lambdas
-gen_lambdas <- function(lambda.max,
-                        lambda.min,
-                        lambdas.length = 30){
-  lambdas.ratio <- lambda.min / lambda.max
-  lambdas <- exp(seq(log(lambda.max), log(lambda.min), log(lambdas.ratio)/(lambdas.length-1)))
-
-  lambdas
-}
