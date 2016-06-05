@@ -4,18 +4,15 @@
 \alias{cd.run}
 \title{Learn structure of a discrete network}
 \usage{
-cd.run(indata, weights = NULL, lambdas.seq = NULL, lambdas.ratio = 0.1,
-  lambdas.length = 30, error.tol = 1e-04, convLb = 0.01, gamma = 1,
-  upperbound = 100)
+cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
+  error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100)
 }
 \arguments{
 \item{indata}{A sparsebnData object.}
 
 \item{weights}{Weight matrix.}
 
-\item{lambdas.seq}{Numeric vector containing a grid of lambda values (i.e. regularization parameters) to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.}
-
-\item{lambdas.ratio}{The ratio of minimum lambda over maximum lambda.}
+\item{lambdas}{Numeric vector containing a grid of lambda values (i.e. regularization parameters) to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.}
 
 \item{lambdas.length}{Integer number of values to include in the solution path.}
 
@@ -23,7 +20,7 @@ cd.run(indata, weights = NULL, lambdas.seq = NULL, lambdas.ratio = 0.1,
 
 \item{convLb}{Small positive number used in Hessian approximation.}
 
-\item{gamma}{A postitive number to scale weight matrix.}
+\item{weight.scale}{A postitive number to scale weight matrix.}
 
 \item{upperbound}{A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.}
 }

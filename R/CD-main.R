@@ -21,35 +21,33 @@ NULL
 #'
 #' @param indata A sparsebnData object.
 #' @param weights Weight matrix.
-#' @param lambdas.seq Numeric vector containing a grid of lambda values (i.e. regularization parameters) to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
-#' @param lambdas.ratio The ratio of minimum lambda over maximum lambda.
+#' @param lambdas Numeric vector containing a grid of lambda values (i.e. regularization parameters) to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
 #' @param lambdas.length Integer number of values to include in the solution path.
 #' @param error.tol Error tolerance for the algorithm, used to test for convergence.
 #' @param convLb Small positive number used in Hessian approximation.
-#' @param gamma A postitive number to scale weight matrix.
+#' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 #' @return A sparsebnPath matrix.
 #' @export
 cd.run <- function(indata,
                    weights=NULL,
-                   lambdas.seq=NULL,
-                   lambdas.ratio=0.1,
+                   lambdas=NULL,
                    lambdas.length=30,
                    error.tol=0.0001,
                    convLb=0.01,
-                   gamma=1.0,
+                   weight.scale=1.0,
                    upperbound = 100.0) {
 
   CD_call(indata = indata,
           eor = NULL,
           weights = weights,
-          lambda_seq = lambdas.seq,
-          fmlam = lambdas.ratio,
+          lambda_seq = lambdas,
+          fmlam = 0.1,
           nlam = lambdas.length,
           eps = error.tol,
           convLb = convLb,
           qtol = error.tol,
-          gamma = gamma,
+          gamma = weight.scale,
           upperbound = upperbound)
 
 }
@@ -100,7 +98,7 @@ CD_call <- function(indata,
   data_matrix <- as.matrix(data_matrix)
 
   # get n_levels.
-  n_levels <- as.integer(as.vector(unlist(data_level)))
+  n_levels <- as.integer(sapply(indata$levels, function(x){length(x)}))
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)
@@ -153,7 +151,7 @@ CD_call <- function(indata,
                            weights,
                            gamma,
                            upperbound)
-    lambda_seq <- generate.lambdas(lambda.max = lambda_m, lambdas.ratio = fmlam, lambdas.length = nlam)
+    lambda_seq <- sparsebnUtils::generate.lambdas(lambda.max = lambda_m, lambdas.ratio = fmlam, lambdas.length = nlam, scale = "log")
   }
   else {
     nlam = length(lambda_seq)

@@ -20,8 +20,10 @@ get_coef_matrix <- function(coef_vec, n_levels) {
 #' @param parents An edgeList, sparsebnFit object or adjacency matrix.
 #' @param n_levels A vector indicating number of levels for each variable
 #' @param dat Data, a dataframe or matrix
+#' @return
+#' List, of length the number of nodes. ith entry of the list is another list that contains parents of node i and the intercept coefficient for the ith node. For each parent of node i, it is a list of index of parent and the coefficient matrix of influence of parent has on node i.
 #' @export
-fit_dag <- function(parents,
+fit_multinom_dag <- function(parents, # rename to something else
                     n_levels,
                     dat
                     ) {
