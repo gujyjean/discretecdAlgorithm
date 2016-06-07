@@ -13,8 +13,10 @@ time <- 1
 test_that("input adjacency matrix can be converted to the right edge list.", {
   ### Trivial case
   adj_matrix_trivial <- matrix(rep(0, 16), nrow = 4)
+  no_parent <- vector("list", length = 4)
+  no_parent <- lapply(no_parent, function(x){return(integer(0))})
   expect_equal(get.summary(adj_matrix_trivial, dataSize, lambda, time)$nedge, 0)
-  expect_equal(get.summary(adj_matrix_trivial, dataSize, lambda, time)$edges, sparsebnUtils::edgeList(vector("list", length = 4)))
+  expect_equal(get.summary(adj_matrix_trivial, dataSize, lambda, time)$edges, sparsebnUtils::edgeList(no_parent))
 
   ### Non-trivil case
   expect_equal(get.summary(adj_matrix, dataSize, lambda, time)$nedge, 4)

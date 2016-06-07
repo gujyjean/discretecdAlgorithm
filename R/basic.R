@@ -10,6 +10,7 @@ get.summary <- function(graph, dataSize, lambda, time) {
   })
   if (length(edges) == 0) {
     edges <- vector("list", length = pp)
+    edges <- lapply(edges, function(x){integer(0)})
   }
   edges <- sparsebnUtils::edgeList(edges)
   return(list(edges = edges, lambda = lambda, nedge = nedge, pp = pp, nn = nn, time = time))

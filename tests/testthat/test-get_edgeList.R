@@ -21,10 +21,14 @@ test_that("get.edgeList function well.", {
   expect_equal(length(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)), 2)
 
   expect_equal(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)[[1]]$nedge, 0)
-  expect_equal(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)[[1]]$edges, sparsebnUtils::edgeList(vector("list", length = 4)))
+
+  # no parent case
+  no_parent <- vector("list", length = 4)
+  no_parent <- lapply(no_parent, function(x){return(integer(0))})
+  expect_equal(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)[[1]]$edges, sparsebnUtils::edgeList(no_parent))
 
   expect_equal(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)[[2]]$nedge, 0)
-  expect_equal(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)[[2]]$edges, sparsebnUtils::edgeList(vector("list", length = 4)))
+  expect_equal(get.edgeList(adj_matrix_trivial, dataSize, lambda, time)[[2]]$edges, sparsebnUtils::edgeList(no_parent))
 
   ### Non-trivial case
   expect_equal(length(get.edgeList(adj_matrix, dataSize, lambda, time)), 2)
