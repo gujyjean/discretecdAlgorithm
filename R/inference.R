@@ -28,7 +28,9 @@ fit_multinom_dag <- function(parents, # rename to something else
                     dat
                     ) {
   data <- as.data.frame(dat)
+
   node <- ncol(data)
+  ### add check that the number of node and the what has been input in parents are consistent!
 
   # factorize each observation
   for (i in 1:node){
@@ -50,13 +52,15 @@ fit_multinom_dag <- function(parents, # rename to something else
   if (!(sparsebnUtils::is.edgeList(parents) || sparsebnUtils::is.sparsebnFit(parents) || is.matrix(parents) || class(parents) == "dgCMatrix")) stop("parents must be an edgeList object or sparsebnFit object or an adjacency matrix!")
 
   # subtract dependent and independent variables for each regression
-  coef <- vector("list", length = node)
+  # coef <- vector("list", length = node)
+  coef <- lapply(seq_len(node), function(i){integer(0)})
   for (i in 1:node){
     y <- data[, i] # dependant variable
     x_ind <- which(adjMatrix[, i]==1) # index for independant variable
     if (length(x_ind)!=0) { # do nothing if a node has no parents
       temp_data <- as.data.frame(cbind(y, data[, x_ind]))
-      fit <- nnet::multinom(y~.,data=temp_data, trace = FALSE)
+      # fit <- nnet::multinom(y~.,data=temp_data, trace = FALSE)
+      fit <- nnet::multinom(temp_data[, 1]~.,data=data[, x_ind], trace = FALSE)
       coef_vec <- coef(fit)
       temp_n_levels <- n_levels[x_ind]
       intercept <- coef_vec[1]

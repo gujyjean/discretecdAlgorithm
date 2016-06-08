@@ -36,9 +36,9 @@ test_that("get.edgeList function well.", {
   expect_equal(get.edgeList(adj_matrix, dataSize, lambda, time)[[1]]$nedge, 4)
   true_edgeList <- vector("list", length = 4)
   true_edgeList[[1]] <- which(adj_matrix == 2)
-  true_edgeList[[2]] <- 1
-  true_edgeList[[3]] <- c(1, 2)
-  true_edgeList[[4]] <- 3
+  true_edgeList[[2]] <- as.integer(1)
+  true_edgeList[[3]] <- as.integer(c(1, 2))
+  true_edgeList[[4]] <- as.integer(3)
   true_edgeList <- sparsebnUtils::edgeList(true_edgeList)
   expect_equal(get.edgeList(adj_matrix, dataSize, lambda, time)[[1]]$edges, true_edgeList)
 
@@ -46,8 +46,8 @@ test_that("get.edgeList function well.", {
   true_edgeList <- vector("list", length = 4)
   true_edgeList[[1]] <- which(adj_matrix == 2)
   true_edgeList[[2]] <- which(adj_matrix == 2)
-  true_edgeList[[3]] <- c(1, 2)
-  true_edgeList[[4]] <- c(1, 2, 3)
+  true_edgeList[[3]] <- as.integer(c(1, 2))
+  true_edgeList[[4]] <- as.integer(c(1, 2, 3))
   true_edgeList <- sparsebnUtils::edgeList(true_edgeList)
   expect_equal(get.edgeList(adj_matrix, dataSize, lambda, time)[[2]]$edges, true_edgeList)
 })

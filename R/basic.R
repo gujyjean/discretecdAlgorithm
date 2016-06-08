@@ -5,13 +5,10 @@ get.summary <- function(graph, dataSize, lambda, time) {
   nedge <- sum(graph)
   pp <- ncol(graph)
   nn <- dataSize
-  edges <- apply(graph, 2, function(x){
+  graph_list <- lapply(seq_len(ncol(graph)), function(i) graph[,i])
+  edges <- lapply(graph_list, function(x){
     return(which(x==1))
   })
-  if (length(edges) == 0) {
-    edges <- vector("list", length = pp)
-    edges <- lapply(edges, function(x){integer(0)})
-  }
   edges <- sparsebnUtils::edgeList(edges)
   return(list(edges = edges, lambda = lambda, nedge = nedge, pp = pp, nn = nn, time = time))
 }

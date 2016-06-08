@@ -45,6 +45,24 @@ adj_matrix <- sparsebnUtils::get.adjacency.matrix(final.dag)
 matrix <- matrix(adj_matrix, nrow = 6)
 
 # test
+test_that("fit_multinom_dag can take empty graphs", {
+  empty_graph <- final[[1]]
+  expect_error(fit_multinom_dag(empty_graph, n_levels, data), NA)
+
+  ### test if I input a graph with a single node, will the algorithm work.
+  data_single <- as.data.frame(matrix(c(0, 1, 2, 0, 0, 3, 3, 2, 2, 1), nrow=10))
+  ### Generate fixed objects for empty graphs
+  generate_empty_edgeList <- function(){
+    sparsebnUtils::edgeList(list(integer(0)))
+  }
+  generate_empty_sparsebnFit <- function(){
+    li <- list(edges = generate_empty_edgeList(), lambda = 1, nedge = 0, pp = 1, nn = 10, time = 1)
+    sparsebnUtils::sparsebnFit(li)
+  }
+  single_node <- generate_empty_sparsebnFit()
+  expect_error(fit_multinom_dag(single_node, n_levels=4, data_single), NA)
+})
+
 test_that("fit_multinom_dag can run with different types of input", {
   ### fit_multinom_dag can accept a sparsebnFit object as an input
   expect_error(fit_multinom_dag(final.dag, n_levels, data), NA)
