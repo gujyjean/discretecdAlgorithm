@@ -55,12 +55,9 @@ fit_multinom_dag <- function(parents, # rename to something else
   # coef <- vector("list", length = node)
   coef <- lapply(seq_len(node), function(i){integer(0)})
   for (i in 1:node){
-    y <- data[, i] # dependant variable
     x_ind <- which(adjMatrix[, i]==1) # index for independant variable
     if (length(x_ind)!=0) { # do nothing if a node has no parents
-      temp_data <- as.data.frame(cbind(y, data[, x_ind]))
-      # fit <- nnet::multinom(y~.,data=temp_data, trace = FALSE)
-      fit <- nnet::multinom(temp_data[, 1]~.,data=data[, x_ind], trace = FALSE)
+      fit <- nnet::multinom(data[, c(i, x_ind)], trace = FALSE) # Why does this work / should we do this?
       coef_vec <- coef(fit)
       temp_n_levels <- n_levels[x_ind]
       intercept <- coef_vec[1]
