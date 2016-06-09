@@ -17,7 +17,7 @@ get_coef_matrix <- function(coef_vec, n_levels) {
 }
 
 #' A function to do inference in Bayesian network.
-#' @param parents An edgeList, sparsebnFit object or adjacency matrix.
+#' @param parents An edgeList object.
 #' @param n_levels A vector indicating number of levels for each variable
 #' @param dat Data, a dataframe or matrix
 #' @return

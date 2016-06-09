@@ -7,7 +7,7 @@
 fit_multinom_dag(parents, n_levels, dat)
 }
 \arguments{
-\item{parents}{An edgeList, sparsebnFit object or adjacency matrix.}
+\item{parents}{An edgeList object.}
 
 \item{n_levels}{A vector indicating number of levels for each variable}
 
