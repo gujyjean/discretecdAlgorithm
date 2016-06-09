@@ -30,7 +30,8 @@ fit_multinom_dag <- function(parents, # rename to something else
   data <- as.data.frame(dat)
 
   node <- ncol(data)
-  ### add check that the number of node and the what has been input in parents are consistent!
+  # check that the number of node and the what has been input in parents are consistent
+  if (length(parents) != ncol(data)) {stop(sprintf("Incompatible graph and data! Data has %d columns but graph has %d nodes.", ncol(dat), length(parents)))}
 
   # factorize each observation
   for (i in 1:node){
@@ -38,39 +39,10 @@ fit_multinom_dag <- function(parents, # rename to something else
     data[,i] <- factor(data[,i],levels=level)
   }
 
-  # get edge_list
-  ### if parents is an edgeList object
-  if (sparsebnUtils::is.edgeList(parents)) {
-    if (length(parents) != ncol(data)) {stop(sprintf("Incompatible graph and data! Data has %d columns but graph has %d nodes.", ncol(dat), length(parents)))}
-    # adjMatrix <- sparsebnUtils::get.adjacency.matrix(parents)
-    edge_list <- parents
-  }
-  if (sparsebnUtils::is.sparsebnFit(parents)) {
-    if (length(parents$edges) != ncol(data)) {stop(sprintf("Incompatible graph and data! Data has %d columns but graph has %d nodes.", ncol(dat), length(parents$edges)))}
-    # adjMatrix <- sparsebnUtils::get.adjacency.matrix(parents)
-    edge_list <- parents$edges
-  }
-  ### if parents is an adjacency matrix
-  if (is.matrix(parents) || class(parents) == "dgCMatrix") {
-    if (sum(((parents!=0)+(parents!=1))!=1)) stop("input matrix must be an adjacency matrix, where 1 means there exists an edge and 0 means there is no edge!")
-    if (ncol(parents) != ncol(data)) {stop(sprintf("Incompatible graph and data! Data has %d columns but graph has %d nodes.", ncol(dat), ncol(parents)))}
-    parents <- as.matrix(parents)
-    # adjMatrix <- parents
-    graph_list <- lapply(seq_len(ncol(parents)), function(i) parents[,i])
-    edge_list <- lapply(graph_list, function(x){
-      return(which(x==1))
-    })
-    edge_list <- sparsebnUtils::edgeList(edge_list)
-  }
-  ### throw an error if parents is neither an adjacency matrix nor an edgeList object
-  if (!(sparsebnUtils::is.edgeList(parents) || sparsebnUtils::is.sparsebnFit(parents) || is.matrix(parents) || class(parents) == "dgCMatrix")) stop("parents must be an edgeList object or sparsebnFit object or an adjacency matrix!")
-
   # subtract dependent and independent variables for each regression
-  # coef <- vector("list", length = node)
   coef <- lapply(seq_len(node), function(i){integer(0)})
   for (i in 1:node){
-    # x_ind <- which(adjMatrix[, i]==1)
-    x_ind <- edge_list[[i]] # index for independant variable
+    x_ind <- parents[[i]] # if inputs are only edgeList object
     if (length(x_ind)!=0) { # do nothing if a node has no parents
       fit <- nnet::multinom(data[, c(i, x_ind)], trace = FALSE) # Why does this work / should we do this?
       coef_vec <- coef(fit)
