@@ -385,7 +385,7 @@ void LineSearch_noZero(const int& node, MatrixXi& G, const int& eor_nr, const Ma
 {
     int rn, pn, rCount1, n1, d1, r1, it1, it2, rInd, cInd;
     double pLog_rn, pLog_rnt, pLog_pn, pLog_pnt;
-    bool need_update1, isBetaZeroFlag1, need_update2, isBetaZeroFlag2;
+    bool need_update1, isBetaZeroFlag1;
     MatrixXd dmt1(maxRows, maxCols),logitm_Tmp, logitm_Tmp1, logitm_Tmp2, beta_Tmp1, beta_Tmp2, yMp;
     MatrixXi nzIndt1(maxRows * maxCols, 2);
     VectorXd rowMax, log_values;

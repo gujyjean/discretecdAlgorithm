@@ -17,7 +17,9 @@ NULL
 # ========================================================
 ## will be exported
 
-#' Learn structure of a discrete network
+#' Structure learning of discrete Bayesian network
+#'
+#' Estimate structure of a discrete Bayesian network from observational/interventional data using the CD algorithm described in \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)}
 #'
 #' @param indata A sparsebnData object.
 #' @param weights Weight matrix.
@@ -27,7 +29,7 @@ NULL
 #' @param convLb Small positive number used in Hessian approximation.
 #' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
-#' @return A sparsebnPath matrix.
+#' @return A \code{\link[sparsebnUtils]{sparsebnPath}} object.
 #' @export
 cd.run <- function(indata,
                    weights=NULL,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/CD-main.R
 \name{cd.run}
 \alias{cd.run}
-\title{Learn structure of a discrete network}
+\title{Structure learning of discrete Bayesian network}
 \usage{
 cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
   error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100)
@@ -25,9 +25,9 @@ cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
 \item{upperbound}{A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.}
 }
 \value{
-A sparsebnPath matrix.
+A \code{\link[sparsebnUtils]{sparsebnPath}} object.
 }
 \description{
-Learn structure of a discrete network
+Estimate structure of a discrete Bayesian network from observational/interventional data using the CD algorithm described in \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)}
 }
 

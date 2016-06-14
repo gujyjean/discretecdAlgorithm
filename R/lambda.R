@@ -2,18 +2,18 @@
 #'
 #' @param indata A sparsebnData object
 #' @param weights Weight matrix
-#' @param gamma A postitive number to scale weight matrix.
+#' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 #' @return The maximum lambda along the solution path.
 #' @export
 max_lambda <- function(indata,
                    weights = NULL,
-                   gamma=1.0,
+                   weight.scale=1.0,
                    upperbound = 100.0) {
 
   lambda_call(indata = indata,
           weights = weights,
-          gamma = gamma,
+          gamma = weight.scale,
           upperbound = upperbound)
 
 }

@@ -492,7 +492,7 @@ void DatGen_obs(const MatrixXi& ordex, const vector<int>& ts, int nobs,
 		levels.push_back(seq(0, nlevels(it1) - 1));
     }
     
-    int dataSize = nobs, Counter = -1, cur, pa;
+    int Counter = -1, cur, pa;
     
 	double rowStat;
 

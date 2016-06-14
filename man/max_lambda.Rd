@@ -4,14 +4,14 @@
 \alias{max_lambda}
 \title{A method to calculate the value of maximum lambda along a solution path}
 \usage{
-max_lambda(indata, weights = NULL, gamma = 1, upperbound = 100)
+max_lambda(indata, weights = NULL, weight.scale = 1, upperbound = 100)
 }
 \arguments{
 \item{indata}{A sparsebnData object}
 
 \item{weights}{Weight matrix}
 
-\item{gamma}{A postitive number to scale weight matrix.}
+\item{weight.scale}{A postitive number to scale weight matrix.}
 
 \item{upperbound}{A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.}
 }
