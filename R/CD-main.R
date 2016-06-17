@@ -91,6 +91,7 @@ CD_call <- function(indata,
   data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
   data_level <- data$levels
+  data_names <- names(data$data)
 
   # Get the dimensions of the data matrix
   dataSize <- nrow(data_matrix)
@@ -194,6 +195,13 @@ CD_call <- function(indata,
   if_remove <- sapply(fit, function(x) {x$nedge == 0})
   if(if_remove[1]==TRUE) {if_remove[1] = FALSE}
   fit[if_remove] = NULL
+
+  # add node names to output
+  for(k in seq_along(fit)){
+    fit[[k]] <- append(fit[[k]], list(data_names), after = 1) # insert node names into second slot
+    names(fit[[k]])[2] <- "nodes"
+  }
+
   # convert element of fit to sparsebnFit object
   fit <- lapply(fit, sparsebnUtils::sparsebnFit)
 
