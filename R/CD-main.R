@@ -108,7 +108,7 @@ CD_call <- function(indata,
 
   # make sure that for each observation, at least on node is not under intervention. If all nodes are under intervention, stop and require user to remove that observation.
   ind <- 1:node
-  is_obs_zero <- sapply(obsIndex_R, function(x){x==0})
+  is_obs_zero <- sapply(obsIndex_R, function(x){(length(x)==1 && x == 0)})
   if(length(ind[is_obs_zero])!=0) {
     stop(sprintf("%d th node has been intervened in all observations, remove this node \n", ind[is_obs_zero]))
   }

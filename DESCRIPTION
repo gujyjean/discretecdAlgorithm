@@ -7,6 +7,8 @@ Description: Structure learning of Bayesian network using coordinate-descent
     algorithm. Designed for discrete data using a product multi-nomial model.
 License: GPL (>= 2)
 LazyData: TRUE
+Depends:
+    R (>= 3.2.3)
 Imports:
     Rcpp, sparsebnUtils, nnet
 LinkingTo: Rcpp, RcppEigen
