@@ -1199,12 +1199,12 @@ void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi&
 				 IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
 
         times1++;
-		if(MAD < eps || times1 > 100)	{
-            if (times1 > 100) {
+		if(MAD < eps || times1 > 50)	{
+            if (times1 > 50) {
                 // cout << endl;
                 Rprintf("\n");
-                // cout << "the " << "outer part reaches maximum" << endl;
-                Rprintf("the outer part reaches maximum");
+                // cout << "the " << "outer iteration reaches maximum" << endl;
+                Rprintf("the outer iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 1 for help.");
             }
             break;
         }
@@ -1226,12 +1226,12 @@ void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi&
 					  IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
 
             times2++;
-			if(MAD < eps || times2 > 10000) {
-                if (times2 > 10000) {
+			if(MAD < eps || times2 > 50000) {
+                if (times2 > 50000) {
                     // cout << endl;
                     Rprintf("\n");
                     // cout << "the " << times1 << "th inner part reaches maximum" << endl;
-                    Rprintf("the %d the inner part reaches maximum", times1);
+                    Rprintf("the %d th inner iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help.", times1);
                 }
                 break;
             }
@@ -1488,7 +1488,7 @@ void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nle
     else
         // cout << "upperbound should be positive!" << endl << endl;
         Rprintf("upperbound sould be positive!");
-    
+
     // create the full design matrix dM for each node (including the baseline column which is assumed to be the last factor level)
     // initialize all relevant information
     VectorXi nobsVec(node);
@@ -1535,9 +1535,9 @@ void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nle
             }
         }
     }
-    
-    
-    
+
+
+
     // compute the maximum lambda and sequence of lambdas
     // initialize betaM
     double lambdaMax = 0.0;
@@ -1548,7 +1548,7 @@ void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nle
         MatrixXd yMp = yM(j);
         RowVectorXd colMean = yMp.colwise().mean();
         yMp.rowwise() -= colMean;
-        
+
         int rCount, di, rj = ndfs(j, j), rInd, cInd;
         MatrixXd dmt(maxRows, maxCols);
         MatrixXi nzIndt(maxRows * maxCols, 2);
@@ -1579,7 +1579,7 @@ void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nle
         logitM(j) = counts.replicate(nobsVec(j), 1);
         /*  end initializing intercepts  */
     }
-    
+
     lambda = lambdaMax;
 }
 

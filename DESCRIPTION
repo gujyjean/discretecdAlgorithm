@@ -4,7 +4,7 @@ Title: Coordinate-Descent Algorithm for Discrete Data
 Version: 0.1.0
 Authors@R: person("Jiaying", "Gu", email = "gujy.lola@gmail.com", role = c("aut", "cre"))
 Description: Structure learning of Bayesian network using coordinate-descent
-    algorithm. Designed for discrete data using a product multi-nomial model.
+    algorithm. Designed for discrete data using a product multinomial model.
 License: GPL (>= 2)
 LazyData: TRUE
 Depends:
@@ -13,5 +13,8 @@ Imports:
     Rcpp, sparsebnUtils, nnet
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 5.0.1
-Suggests: testthat
+Suggests: testthat,
+    knitr,
+    rmarkdown
 SystemRequirements: C++11
+VignetteBuilder: knitr
