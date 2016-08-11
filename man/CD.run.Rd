@@ -2,7 +2,7 @@
 % Please edit documentation in R/CD-main.R
 \name{cd.run}
 \alias{cd.run}
-\title{Structure learning of discrete Bayesian network}
+\title{cd.run}
 \usage{
 cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
   error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100)
@@ -10,9 +10,16 @@ cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
 \arguments{
 \item{indata}{A sparsebnData object.}
 
-\item{weights}{Weight matrix.}
+\item{weights}{Weight matrix. Weight can be the \code{l_2} norm of a consistent estimate of \code{beta_{j.i}}.
+See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.3 for more details.
+An improper weight matrix can damage the result and may even make the algorithm fail to converge.}
 
-\item{lambdas}{Numeric vector containing a grid of lambda values (i.e. regularization parameters) to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.}
+\item{lambdas}{Numeric vector containing a grid of lambda values (i.e. regularization parameters)
+to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
+To generate a sequence of lambdas see \code{\link[sparsebnUtils]{generate.lambdas}}.
+For discrete network, the paper provided a way to calculate a maximum lambda that penalizes all parameters to zero,
+\href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.4.
+See function \code{\link{max_lambda}} for details.}
 
 \item{lambdas.length}{Integer number of values to include in the solution path.}
 
@@ -22,12 +29,57 @@ cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
 
 \item{weight.scale}{A postitive number to scale weight matrix.}
 
-\item{upperbound}{A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.}
+\item{upperbound}{A large positive value used to truncate the adaptive weights.
+A -1 value indicates that there is no truncation.}
 }
 \value{
 A \code{\link[sparsebnUtils]{sparsebnPath}} object.
+        The CD Algorithm will be stoped if the number of edges exceeds 3 times of number of variables.
 }
 \description{
-Estimate structure of a discrete Bayesian network from observational/interventional data using the CD algorithm described in \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)}
+Structure learning of discrete Bayesian network
+}
+\details{
+Estimate structure of a discrete Bayesian network from observational/interventional data using the CD algorithm described in \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)}.
+
+Instead of producing a single estimate, this algorithm computes a solution path of estimates based
+on the values supplied to \code{lambdas} or \code{lambdas.length}.
+This package do not provide a model selection method in this version, users can choose their own model selection criterion.
+In later version of this package we will provide an empirical model selection method.
+
+This package can handle interventional data by input a list of intervention. See example for more detail.
+}
+\examples{
+
+\dontrun{
+
+### Generate some random data
+dat <- matrix(rbinom(200, size = 3, prob = 0.4), nrow = 20)
+# for observational data
+dat_obs <- sparsebnUtils::sparsebnData(dat, type = "discrete")
+# for interventional data
+data_size <- nrow(dat)
+ivn <- lapply(1:data_size, function(x){return(as.integer(x/10))})
+# if there is no intervention for an observation, use 0.
+# cd algorithm can handle multiple interventions for a single observation.
+dat_int <- sparsebnUtils::sparsebnData(dat, ivn = ivn, type = "discrete")
+
+# Run with default settings for observational data
+cd.run(indata = dat_obs)
+# Run with default settings for interventional data
+cd.run(indata = dat_int)
+
+### Optional: Adjust settings
+n_node <- ncol(dat)
+
+# Run algorithm with a given weight
+# Careful with this option.
+weights <- matrix(1, nrow = n_node, ncol = n_node)
+
+# Run with adjusted settings
+cd.run(indata = dat_obs, weights = weights, lambdas.length = 10)
+
+# Note: Normally, users do not need to change default settings.
+}
 }
 

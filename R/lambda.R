@@ -1,10 +1,25 @@
-#' A method to calculate the value of maximum lambda along a solution path
+#' max_lambda
+#'
+#' A method to calculate the value of maximum lambda along a solution path.
+#' See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.4 for more detail.
 #'
 #' @param indata A sparsebnData object
 #' @param weights Weight matrix
 #' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 #' @return The maximum lambda along the solution path.
+#' @examples
+#'
+#' \dontrun{
+#'
+#' ### Generate some random data
+#' dat <- matrix(rbinom(200, size = 3, prob = 0.4), nrow = 20)
+#' # for observational data
+#' dat <- sparsebnUtils::sparsebnData(dat, type = "discrete")
+#'
+#' # generate the maximum lambda
+#' max_lambda(indata = dat)
+#' }
 #' @export
 max_lambda <- function(indata,
                    weights = NULL,

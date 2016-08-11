@@ -2,7 +2,7 @@
 % Please edit documentation in R/lambda.R
 \name{max_lambda}
 \alias{max_lambda}
-\title{A method to calculate the value of maximum lambda along a solution path}
+\title{max_lambda}
 \usage{
 max_lambda(indata, weights = NULL, weight.scale = 1, upperbound = 100)
 }
@@ -19,6 +19,20 @@ max_lambda(indata, weights = NULL, weight.scale = 1, upperbound = 100)
 The maximum lambda along the solution path.
 }
 \description{
-A method to calculate the value of maximum lambda along a solution path
+A method to calculate the value of maximum lambda along a solution path.
+See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.4 for more detail.
+}
+\examples{
+
+\dontrun{
+
+### Generate some random data
+dat <- matrix(rbinom(200, size = 3, prob = 0.4), nrow = 20)
+# for observational data
+dat <- sparsebnUtils::sparsebnData(dat, type = "discrete")
+
+# generate the maximum lambda
+max_lambda(indata = dat)
+}
 }
 
