@@ -378,259 +378,165 @@ void firstDMFetch(MatrixXd& dmt, MatrixXi& nzIndt, int& rCount, const MatrixXd& 
 	rCount += 1;
 }
 
-void LineSearch_noZero(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eor, vector<int>& active, double& MAD, const VectorXi& nobsVec,
-                const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
-                MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
-                const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
+// line search to update beta value.
+void lineSearch(const MatrixXd& beta, MatrixXd& beta_tmp, const MatrixXd& logitm, MatrixXd& logitm_tmp,
+                const VectorXi& ynzind, const double& penalty, const MatrixXi& nzIndex, const MatrixXd& dm,
+                const MatrixXd& dif, const MatrixXd& grad, double& alpha, const double& delta,
+                const double& sigma, const bool& isBetaZero, bool& isBetaZero_Tmp, const int& nh,
+                const int& nrows, const int& di, const int& rj, bool& needUpdate)
 {
-    int rn, pn, rCount1, n1, d1, r1, it1, it2, rInd, cInd;
-    double pLog_rn, pLog_rnt, pLog_pn, pLog_pnt;
+    // definition
+    VectorXi yInd;
+    int l = 0; // l is the tracker of the number of iterations of line search
+    int rInd, cInd;
+    double pLog, St_old = 0.0, St_new = 0.0, big_delta = 0.0;
+    MatrixXd yMp, logitm_T, beta_T;
+    VectorXd rowMax, log_values;
+    
+    // calculate old score
+    pLog = 0.0;
+    yInd = ynzind;
+    yMp = logitm;
+    rowMax = yMp.rowwise().maxCoeff();
+    yMp.colwise() -= rowMax;
+    log_values = yMp.array().exp().rowwise().sum().log();
+    pLog -= penalty * (beta).norm();
+    for (int it2 = 0; it2 < nh; ++it2) {
+        pLog -= log_values(it2) - yMp(it2, yInd(it2));
+    }
+    St_old = -pLog;
+    
+    // calculate big_delta
+    big_delta = - (dif * grad.transpose()).rowwise().sum().sum() + penalty * (beta_tmp).norm() - penalty * (beta).norm();
+    
+    // loop to find alpha
+    while (true) {
+        logitm_T = logitm;
+        
+        // recalculate dif
+        MatrixXd dif_T = alpha * dif;
+        beta_T = beta + dif_T;
+        
+        // recalculate logitm
+        for (int ii = 0; ii < nrows; ++ii) {
+            rInd = nzIndex(ii, 0);
+            cInd = nzIndex(ii, 1);
+            logitm_T.row(rInd) += dif_T.row(cInd) * dm(rInd, cInd);
+        }
+        
+        // calculate new score
+        pLog = 0.0;
+        yMp = logitm_T;
+        rowMax = yMp.rowwise().maxCoeff();
+        yMp.colwise() -= rowMax;
+        log_values = yMp.array().exp().rowwise().sum().log();
+        pLog -= penalty * (beta_T).norm();
+        for (int it2 = 0; it2 < nh; ++it2) {
+            pLog -= log_values(it2) -yMp(it2, yInd(it2));
+        }
+        St_new = -pLog;
+        
+        double error_tol = pow(10.0, -6);
+        // decide if stopping criterion is met
+        if ((St_new - St_old) <= (alpha * sigma * big_delta) || abs(alpha) < error_tol) {
+            
+            if (abs(alpha) >= error_tol) {
+                if (!isBetaZero) {
+                    // If beta was not zero, and line search suggest it should be zero.
+                    if (beta_T.lpNorm<Infinity>() <= pow(10.0, -6)){
+                        isBetaZero_Tmp = TRUE;
+                        beta_T = MatrixXd::Zero(di, rj);
+                        dif_T = beta_T - beta;
+                        logitm_T = logitm;
+                        for (int ii = 0; ii < nrows; ++ii) {
+                            rInd = nzIndex(ii, 0);
+                            cInd = nzIndex(ii, 1);
+                            logitm_T.row(rInd) += dif_T.row(cInd) * dm(rInd, cInd);
+                        }
+                    }
+                    else {
+                        // if beta was not zero and line search agree
+                        isBetaZero_Tmp = FALSE;
+                    }
+                }
+                else {
+                    // if beta was zero, but line search suggest to move.
+                    isBetaZero_Tmp = FALSE;
+                }
+            }
+            else if (abs(alpha) < error_tol) {
+                // if line search suggest to stay where beta was.
+                isBetaZero_Tmp = isBetaZero;
+                beta_T = beta;
+                logitm_T = logitm;
+                needUpdate = FALSE;
+            }
+            beta_tmp = beta_T;
+            logitm_tmp = logitm_T;
+            break;
+        }
+        
+        // for the next loop
+        l = l + 1;
+        alpha = alpha * delta;
+    }
+}
+
+// linesearch added to beta update_by Jean
+void innerLearning(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eor, vector<int>& active, double& MAD, const VectorXi& nobsVec,
+                   const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
+                   MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
+                   const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
+{
+    int rn, pn, rCount1, n1, d1, r1, it1;
     bool need_update1, isBetaZeroFlag1;
-    MatrixXd dmt1(maxRows, maxCols),logitm_Tmp, logitm_Tmp1, logitm_Tmp2, beta_Tmp1, beta_Tmp2, yMp;
+    MatrixXd dmt1(maxRows, maxCols),logitm_Tmp, logitm_Tmp1, beta_Tmp1, yMp;
     MatrixXi nzIndt1(maxRows * maxCols, 2);
     VectorXd rowMax, log_values;
     VectorXi yInd;
     MAD = 0.0;
-
+    
+    
     for (it1 = 0; it1 < eor_nr; ++it1){
         rn = eor(it1, 0)-1;
         pn = eor(it1, 1)-1;
-
-        if(!IsBetaZeros(pn, rn)) {
-            n1 = nobsVec(rn);
-            d1 = ndfs(pn, rn);
-            r1 = ndfs(rn, rn);
-
-            dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
-
-            MatrixXd grad(d1, r1), dif(d1, r1);
-
-            NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn), penalties(pn, rn), qtol, grad, dif, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
-
+        
+        n1 = nobsVec(rn);
+        d1 = ndfs(pn, rn);
+        r1 = ndfs(rn, rn);
+        
+        dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
+        
+        MatrixXd grad(d1, r1), dif(d1, r1);
+        
+        NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn), penalties(pn, rn), qtol, grad, dif, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+        
+        if (need_update1) {
+            
+            // use line search to update beta and logit matrix.
+            double alpha = 1.0;
+            double delta = 0.5;
+            double sigma = 0.1;
+            
+            lineSearch(betaM(pn, rn), beta_Tmp1, logitM(rn), logitm_Tmp1, yNZIndex(rn), penalties(pn, rn), nzIndt1, dmt1, dif, grad, alpha, delta, sigma, IsBetaZeros(pn, rn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+            
             if (need_update1) {
-                logitm_Tmp = logitM(rn);
-                for (it2 = 0; it2 < rCount1; ++it2) {
-                    rInd = nzIndt1(it2, 0);
-                    cInd = nzIndt1(it2, 1);
-                    logitm_Tmp.row(rInd) -= betaM(pn, rn).row(cInd) * dmt1(rInd, cInd);
-                }
-                yInd = yNZIndex(rn);
-                yMp = logitm_Tmp;
-                rowMax = yMp.rowwise().maxCoeff();
-                yMp.colwise() -= rowMax;
-                log_values = yMp.array().exp().rowwise().sum().log();
-                pLog_rn = 0.0;
-                for (it2 = 0; it2 < n1; ++it2) {
-                    pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
-                }
-
-                yMp = logitM(rn);
-                rowMax = yMp.rowwise().maxCoeff();
-                yMp.colwise() -= rowMax;
-                log_values = yMp.array().exp().rowwise().sum().log();
-                pLog_rn -= penalties(pn, rn) * (betaM(pn, rn)).norm();
-                for (it2 = 0; it2 < n1; ++it2) {
-                    pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
-                }
-                double St_old;
-                St_old = -pLog_rn;
-
-                //choose an alpha
-                double alpha = 1.0;
-                double delta = 0.9;
-                double sigma = 0.9;
-                MatrixXd logitm_T;
-                MatrixXd beta_T;
-                int l = 0;
-                while (true) {
-                    logitm_T = logitM(rn);
-                    // recalculate dif
-                    MatrixXd dif_T = alpha * dif;
-                    beta_T = betaM(pn, rn) + dif_T;
-                    // recalculate logitm
-                    for (int ii = 0; ii < rCount1; ++ii) {
-                        rInd = nzIndt1(ii, 0);
-                        cInd = nzIndt1(ii, 1);
-                        logitm_T.row(rInd) += dif_T.row(cInd) * dmt1(rInd, cInd);
-                    }
-                    // calculate new penalized negative log-likelihood
-                    logitm_Tmp = logitM(rn);
-                    for (it2 = 0; it2 < rCount1; ++it2) {
-                        rInd = nzIndt1(it2, 0);
-                        cInd = nzIndt1(it2, 1);
-                        logitm_Tmp.row(rInd) -= betaM(pn, rn).row(cInd) * dmt1(rInd, cInd);
-                    }
-                    yInd = yNZIndex(rn);
-                    yMp = logitm_Tmp;
-                    rowMax = yMp.rowwise().maxCoeff();
-                    yMp.colwise() -= rowMax;
-                    log_values = yMp.array().exp().rowwise().sum().log();
-                    pLog_rnt = 0;
-                    for (it2 = 0; it2 < n1; ++it2) {
-                        pLog_rnt += log_values(it2) - yMp(it2, yInd(it2));
-                    }
-
-                    yMp = logitm_T;
-                    rowMax = yMp.rowwise().maxCoeff();
-                    yMp.colwise() -= rowMax;
-                    log_values = yMp.array().exp().rowwise().sum().log();
-                    pLog_rnt -= penalties(pn, rn) * (beta_T).norm();
-                    for (it2 = 0; it2 < n1; ++it2) {
-                        pLog_rnt -= log_values(it2) -yMp(it2, yInd(it2));
-                    }
-                    double St_new = -pLog_rnt;
-
-                    // calculate big_delta
-                    double big_delta;
-                    big_delta = - (dif * grad.transpose()).rowwise().sum().sum() + penalties(pn, rn) * (beta_T).norm() - penalties(pn, rn) * (betaM(pn, rn)).norm();
-
-
-                    if ((St_new - St_old) <= (alpha * sigma * big_delta) || l > 4) {
-                        break;
-                    }
-
-                    // for the next loop
-                    l = l + 1;
-                    alpha = alpha * delta;
-                }
-
-                MAD = max(MAD, (beta_T-betaM(pn, rn)).lpNorm<Infinity>());
-                betaM(pn, rn) = beta_T;
-                //            betaM(pn, rn) = beta_Tmp1;
-                logitM(rn) = logitm_T;
-                //            logitM(rn) = logitm_Tmp1;
-
-                if (l == 0) {
-                    IsBetaZeros(pn, rn) = isBetaZeroFlag1;
-                }
-
+                MAD = max(MAD, (beta_Tmp1-betaM(pn, rn)).lpNorm<Infinity>());
+                betaM(pn, rn) = beta_Tmp1;
+                logitM(rn) = logitm_Tmp1;
+                IsBetaZeros(pn, rn) = isBetaZeroFlag1;
+                
                 auto beta_inter_Tmp = betaM(node, rn);
                 InterceptUpdate(n1, yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
                 betaM(node, rn) = beta_inter_Tmp + alpha*(betaM(node, rn)-beta_inter_Tmp);
                 MAD = max(MAD, (beta_inter_Tmp - betaM(node, rn)).lpNorm<Infinity>());
-
+                
                 if (IsBetaZeros(pn, rn)) {
                     G(pn, rn) = 0;
                 }
-            }
-
-        }
-        else if (!IsBetaZeros(rn, pn)) {
-            n1 = nobsVec(pn);
-            d1 = ndfs(rn, pn);
-            r1 = ndfs(pn, pn);
-
-            dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
-
-            MatrixXd grad(d1, r1), dif(d1, r1);
-
-            NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn), penalties(rn, pn), qtol, grad, dif, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
-
-            if (need_update1) {
-                //comput S(beta(t))
-                logitm_Tmp = logitM(pn);
-                for (it2 = 0; it2 < rCount1; ++it2) {
-                    rInd = nzIndt1(it2, 0);
-                    cInd = nzIndt1(it2, 1);
-                    logitm_Tmp.row(rInd) -= betaM(rn, pn).row(cInd) * dmt1(rInd, cInd);
+                else {
+                    G(pn, rn) = 1;
                 }
-                yInd = yNZIndex(pn);
-                yMp = logitm_Tmp;
-                rowMax = yMp.rowwise().maxCoeff();
-                yMp.colwise() -= rowMax;
-                log_values = yMp.array().exp().rowwise().sum().log();
-                pLog_pn = 0.0;
-                for (it2 = 0; it2 < n1; ++it2) {
-                    pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
-                }
-
-                yMp = logitM(pn);
-                rowMax = yMp.rowwise().maxCoeff();
-                yMp.colwise() -= rowMax;
-                log_values = yMp.array().exp().rowwise().sum().log();
-                pLog_pn -= penalties(rn, pn) * (betaM(rn, pn)).norm();
-                for (it2 = 0; it2 < n1; ++it2) {
-                    pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
-                }
-                double St_old;
-                St_old = -pLog_pn;
-
-                //choose an alpha
-                double alpha = 1.0;
-                double delta = 0.9;
-                double sigma = 0.9;
-                MatrixXd logitm_T;
-                MatrixXd beta_T;
-                int l = 0;
-                while (true) {
-                    logitm_T = logitM(pn);
-                    // recalculate dif
-                    MatrixXd dif_T = alpha * dif;
-                    beta_T = betaM(rn, pn) + dif_T;
-                    // recalculate logitm
-                    for (int ii = 0; ii < rCount1; ++ii) {
-                        rInd = nzIndt1(ii, 0);
-                        cInd = nzIndt1(ii, 1);
-                        logitm_T.row(rInd) += dif_T.row(cInd) * dmt1(rInd, cInd);
-                    }
-                    // calculate new penalized negative log-likelihood
-                    logitm_Tmp = logitM(pn);
-                    for (it2 = 0; it2 < rCount1; ++it2) {
-                        rInd = nzIndt1(it2, 0);
-                        cInd = nzIndt1(it2, 1);
-                        logitm_Tmp.row(rInd) -= betaM(rn, pn).row(cInd) * dmt1(rInd, cInd);
-                    }
-                    yInd = yNZIndex(pn);
-                    yMp = logitm_Tmp;
-                    rowMax = yMp.rowwise().maxCoeff();
-                    yMp.colwise() -= rowMax;
-                    log_values = yMp.array().exp().rowwise().sum().log();
-                    pLog_pnt = 0;
-                    for (it2 = 0; it2 < n1; ++it2) {
-                        pLog_pnt += log_values(it2) - yMp(it2, yInd(it2));
-                    }
-
-                    yMp = logitm_T;
-                    rowMax = yMp.rowwise().maxCoeff();
-                    yMp.colwise() -= rowMax;
-                    log_values = yMp.array().exp().rowwise().sum().log();
-                    pLog_pnt -= penalties(rn, pn) * (beta_T).norm();
-                    for (it2 = 0; it2 < n1; ++it2) {
-                        pLog_pnt -= log_values(it2) -yMp(it2, yInd(it2));
-                    }
-                    double St_new = -pLog_pnt;
-
-                    // calculate big_delta
-                    double big_delta;
-                    big_delta = - (dif * grad.transpose()).rowwise().sum().sum() + penalties(rn, pn) * (beta_T).norm() - penalties(rn, pn) * (betaM(rn, pn)).norm();
-
-
-                    if ((St_new - St_old) <= (alpha * sigma * big_delta) || l > 4) {
-                        break;
-                    }
-
-                    // for the next loop
-                    l = l + 1;
-                    alpha = alpha * delta;
-                }
-
-                MAD = max(MAD, (beta_T-betaM(rn, pn)).lpNorm<Infinity>());
-                betaM(rn, pn) = beta_T;
-                //            betaM(rn, pn) = beta_Tmp1;
-                logitM(pn) = logitm_T;
-                //            logitM(pn) = logitm_Tmp1;
-                if (l == 0) {
-                    IsBetaZeros(rn, pn) = isBetaZeroFlag1;
-                }
-
-                auto beta_inter_Tmp = betaM(node, pn);
-                InterceptUpdate(n1, yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-                betaM(node, pn) = beta_inter_Tmp + alpha*(betaM(node, pn)-beta_inter_Tmp);
-                MAD = max(MAD, (beta_inter_Tmp-betaM(node, pn)).lpNorm<Infinity>());
-            }
-
-            if (IsBetaZeros(rn, pn)) {
-                G(rn, pn) = 0;
             }
         }
     }
@@ -638,8 +544,8 @@ void LineSearch_noZero(const int& node, MatrixXi& G, const int& eor_nr, const Ma
 
 // CD algorithm, main part.
 /*
-Note: certain restrictions apply to the data matrix.
-Let's define the jth problem as follows: using node j as the response and all other nodes as predictors (1 <= j <= p).
+ Note: certain restrictions apply to the data matrix.
+ Let's define the jth problem as follows: using node j as the response and all other nodes as predictors (1 <= j <= p).
 0. For any j, we enforce that the levels of node j are coded as 0, 1, 2, ..., . We also enforce that sample indices of the data matrix start from
    0 rather than 1.
 1. For any j, the data for the jth problem (after excluding interventional samples of the jth node) should have enough samples such that every node
@@ -652,590 +558,702 @@ Let's define the jth problem as follows: using node j as the response and all ot
 6. yNZIndex: a p by 1 vector. Each element j is a vector whose hth element is the nonzero level for node j in sample h.
 */
 void OneCDLoop(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eor, vector<int>& active, double& MAD, const VectorXi& nobsVec,
-               const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
-			   MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
-			   const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
+                          const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
+                          MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
+                          const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
 {
-	/* betaM(node, j) and hvals(node, j) stores the intercept terms for the jth problem. */
-
-	int rn, pn, rCount1, n1, d1, r1,
-		it1, it2, rInd, cInd;
-	double pLog_rn, pLog_pn;
-	bool need_update1, isBetaZeroFlag1, need_update2, isBetaZeroFlag2;
-	MatrixXd dmt1(maxRows, maxCols), logitm_Tmp, logitm_Tmp1, beta_Tmp1,
-		logitm_Tmp2, beta_Tmp2, yMp;
-	MatrixXi nzIndt1(maxRows * maxCols, 2);
-	VectorXd rowMax, log_values;
-	VectorXi yInd;
-	MAD = 0.0;
-
-	for (it1 = 0; it1 < eor_nr; ++it1)
-	{
-
-		rn = eor(it1, 0) - 1;
-		pn = eor(it1, 1) - 1;
-		G(rn, pn) = G(pn, rn) = 0;
-
-		if(Cycle(node, &G(0, 0), rn + 1, pn + 1))
-		{
-			n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
-
-			// create a local copy of the design matrix of node pn
-			dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
-
-			// update beta
-			beta_Tmp1 = betaM(pn, rn);
-			NewtonIterUpdate(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn),
-							hvals(pn, rn), penalties(pn, rn), qtol);
-			MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
-
-			// update the intercept
-			beta_Tmp1 = betaM(node, rn);
-			InterceptUpdate(n1, yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
-			MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
-
-			// update the graph and the active set
-			if (!IsBetaZeros(pn, rn))
-			{
-				G(pn, rn) = 1;
-				active.push_back(it1);
-			}
-		}
-
-		else if (Cycle(node, &G(0, 0), pn + 1, rn + 1))
-		{
-			n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
-
-			// create a local copy of the design matrix of node rn
-			dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
-
-			// update beta
-			beta_Tmp2 = betaM(rn, pn);
-			NewtonIterUpdate(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn),
-							hvals(rn, pn), penalties(rn, pn), qtol);
-			MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
-
-			// update the intercept
-			beta_Tmp2 = betaM(node, pn);
-			InterceptUpdate(n1, yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-			MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
-
-			// update the graph and the active set
-			if (!IsBetaZeros(rn, pn))
-			{
-				G(rn, pn) = 1;
-				active.push_back(it1);
-			}
-		}
-
-		else
-		{
-			if (!IsBetaZeros(pn, rn))
-			{
-				// consider pn to rn
-				n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
-				dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
-				NewtonIterTmp(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn),
-							penalties(pn, rn), qtol, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
-				if (!need_update1)
-				{
-					// compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
-					logitm_Tmp = logitM(rn);
-					for (it2 = 0; it2 < rCount1; ++it2)
-					{
-						rInd = nzIndt1(it2, 0);
-						cInd = nzIndt1(it2, 1);
-						logitm_Tmp.row(rInd) -= betaM(pn, rn).row(cInd) * dmt1(rInd, cInd);
-					}
-					yInd = yNZIndex(rn);
-					yMp = logitm_Tmp;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the rn^th penalized negative log-likelihood
-					yMp = logitM(rn);
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn -= penalties(pn, rn) * (betaM(pn, rn)).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-				else if (!isBetaZeroFlag1)
-				{
-					// compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
-					logitm_Tmp = logitM(rn);
-					for (it2 = 0; it2 < rCount1; ++it2)
-					{
-						rInd = nzIndt1(it2, 0);
-						cInd = nzIndt1(it2, 1);
-						logitm_Tmp.row(rInd) -= betaM(pn, rn).row(cInd) * dmt1(rInd, cInd);
-					}
-					yInd = yNZIndex(rn);
-					yMp = logitm_Tmp;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the rn^th penalized negative log-likelihood
-					yMp = logitm_Tmp1;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn -= penalties(pn, rn) * (beta_Tmp1).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-				else
-				{
-					logitm_Tmp = logitm_Tmp1;
-					pLog_rn = 0.0;
-				}
-
-
-				// consider rn to pn
-				n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
-				dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
-				NewtonIterTmp(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn),
-							penalties(rn, pn), qtol, logitm_Tmp2, beta_Tmp2, isBetaZeroFlag2, need_update2);
-				if (!need_update2)
-				{
-					pLog_pn = 0.0;
-				}
-				else
-				{
-					// compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
-					yInd = yNZIndex(pn);
-					yMp = logitM(pn);
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the pn^th penalized negative log-likelihood
-					yMp = logitm_Tmp2;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn -= penalties(rn, pn) * (beta_Tmp2).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-
-				if (pLog_pn <= pLog_rn)
-				{
-					if (need_update1)
-					{
-						MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
-						logitM(rn) = logitm_Tmp1;
-						betaM(pn, rn) = beta_Tmp1;
-						IsBetaZeros(pn, rn) = isBetaZeroFlag1;
-
-						beta_Tmp1 = betaM(node, rn);
-						InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
-						MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
-					}
-					if (!IsBetaZeros(pn, rn))
-					{
-						G(pn, rn) = 1;
-						active.push_back(it1);
-					}
-				}
-				else
-				{
-					MAD = max(MAD, betaM(pn, rn).lpNorm<Infinity>());
-					logitM(rn) = logitm_Tmp;
-					betaM(pn, rn) = MatrixXd::Zero(ndfs(pn, rn), ndfs(rn, rn));
-					IsBetaZeros(pn, rn) = true;
-
-					beta_Tmp1 = betaM(node, rn);
-					InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
-					MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
-
-					if (need_update2)
-					{
-						MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
-						logitM(pn) = logitm_Tmp2;
-						betaM(rn, pn) = beta_Tmp2;
-						IsBetaZeros(rn, pn) = isBetaZeroFlag2;
-
-						beta_Tmp2 = betaM(node, pn);
-						InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-						MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
-					}
-					if (!IsBetaZeros(rn, pn))
-					{
-						G(rn, pn) = 1;
-						active.push_back(it1);
-					}
-				}
-			}
-			else if (!IsBetaZeros(rn, pn))
-			{
-				// consider pn to rn
-				n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
-				dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
-				NewtonIterTmp(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn),
-							penalties(pn, rn), qtol, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
-				if (!need_update1)
-				{
-					pLog_rn = 0.0;
-				}
-				else
-				{
-					// compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
-					yInd = yNZIndex(rn);
-					yMp = logitM(rn);
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the rn^th penalized negative log-likelihood
-					yMp = logitm_Tmp1;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn -= penalties(pn, rn) * (beta_Tmp1).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-
-				// consider rn to pn
-				n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
-				dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
-				NewtonIterTmp(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn),
-							penalties(rn, pn), qtol, logitm_Tmp2, beta_Tmp2, isBetaZeroFlag2, need_update2);
-				if (!need_update2)
-				{
-					// compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
-					logitm_Tmp = logitM(pn);
-					for (it2 = 0; it2 < rCount1; ++it2)
-					{
-						rInd = nzIndt1(it2, 0);
-						cInd = nzIndt1(it2, 1);
-						logitm_Tmp.row(rInd) -= betaM(rn, pn).row(cInd) * dmt1(rInd, cInd);
-					}
-					yInd = yNZIndex(pn);
-					yMp = logitm_Tmp;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the pn^th penalized negative log-likelihood
-					yMp = logitM(pn);
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn -= penalties(rn, pn) * (betaM(rn, pn)).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-				else if (!isBetaZeroFlag2)
-				{
-					// compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
-					logitm_Tmp = logitM(pn);
-					for (it2 = 0; it2 < rCount1; ++it2)
-					{
-						rInd = nzIndt1(it2, 0);
-						cInd = nzIndt1(it2, 1);
-						logitm_Tmp.row(rInd) -= betaM(rn, pn).row(cInd) * dmt1(rInd, cInd);
-					}
-					yInd = yNZIndex(pn);
-					yMp = logitm_Tmp;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the pn^th penalized negative log-likelihood
-					yMp = logitm_Tmp2;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn -= penalties(rn, pn) * (beta_Tmp2).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-				else
-				{
-					logitm_Tmp = logitm_Tmp2;
-					pLog_pn = 0.0;
-				}
-
-				if (pLog_rn <= pLog_pn)
-				{
-					if (need_update2)
-					{
-						MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
-						logitM(pn) = logitm_Tmp2;
-						betaM(rn, pn) = beta_Tmp2;
-						IsBetaZeros(rn, pn) = isBetaZeroFlag2;
-
-						beta_Tmp2 = betaM(node, pn);
-						InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-						MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
-					}
-					if (!IsBetaZeros(rn, pn))
-					{
-						G(rn, pn) = 1;
-						active.push_back(it1);
-					}
-				}
-				else
-				{
-					MAD = max(MAD, betaM(rn, pn).lpNorm<Infinity>());
-					logitM(pn) = logitm_Tmp;
-					betaM(rn, pn) = MatrixXd::Zero(ndfs(rn, pn), ndfs(pn, pn));
-					IsBetaZeros(rn, pn) = true;
-
-					beta_Tmp2 = betaM(node, pn);
-					InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-					MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
-
-					if (need_update1)
-					{
-						MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
-						logitM(rn) = logitm_Tmp1;
-						betaM(pn, rn) = beta_Tmp1;
-						IsBetaZeros(pn, rn) = isBetaZeroFlag1;
-
-						beta_Tmp1 = betaM(node, rn);
-						InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
-						MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
-					}
-					if (!IsBetaZeros(pn, rn))
-					{
-						G(pn, rn) = 1;
-						active.push_back(it1);
-					}
-				}
-			}
-			else
-			{
-				// consider pn to rn
-				n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
-				dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
-				NewtonIterTmp(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn),
-							penalties(pn, rn), qtol, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
-				if (!need_update1)
-				{
-					pLog_rn = 0.0;
-				}
-				else
-				{
-					// compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
-					yInd = yNZIndex(rn);
-					yMp = logitM(rn);
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the rn^th penalized negative log-likelihood
-					yMp = logitm_Tmp1;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_rn -= penalties(pn, rn) * (beta_Tmp1).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-
-				// consider rn to pn
-				n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
-				dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
-				NewtonIterTmp(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn),
-							penalties(rn, pn), qtol, logitm_Tmp2, beta_Tmp2, isBetaZeroFlag2, need_update2);
-				if (!need_update2)
-				{
-					pLog_pn = 0.0;
-				}
-				else
-				{
-					// compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
-					yInd = yNZIndex(pn);
-					yMp = logitM(pn);
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn = 0.0;
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
-					}
-
-					// compute the difference in the pn^th penalized negative log-likelihood
-					yMp = logitm_Tmp2;
-					rowMax = yMp.rowwise().maxCoeff();
-					yMp.colwise() -= rowMax;
-					log_values = yMp.array().exp().rowwise().sum().log();
-					pLog_pn -= penalties(rn, pn) * (beta_Tmp2).norm();
-					for (it2 = 0; it2 < n1; ++it2)
-					{
-						pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
-					}
-				}
-
-				if (pLog_pn <= pLog_rn)
-				{
-					if (need_update1)
-					{
-						MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
-						logitM(rn) = logitm_Tmp1;
-						betaM(pn, rn) = beta_Tmp1;
-						IsBetaZeros(pn, rn) = isBetaZeroFlag1;
-
-						beta_Tmp1 = betaM(node, rn);
-						InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
-						MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
-					}
-					if (!IsBetaZeros(pn, rn))
-					{
-						G(pn, rn) = 1;
-						active.push_back(it1);
-					}
-				}
-				else
-				{
-					if (need_update2)
-					{
-						MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
-						logitM(pn) = logitm_Tmp2;
-						betaM(rn, pn) = beta_Tmp2;
-						IsBetaZeros(rn, pn) = isBetaZeroFlag2;
-
-						beta_Tmp2 = betaM(node, pn);
-						InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-						MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
-					}
-					if (!IsBetaZeros(rn, pn))
-					{
-						G(rn, pn) = 1;
-						active.push_back(it1);
-					}
-				}
-			}
-		}
-
-	}
-
+    /* betaM(node, j) and hvals(node, j) stores the intercept terms for the jth problem. */
+    
+    int rn, pn, rCount1, n1, d1, r1,
+    it1, it2, rInd, cInd;
+    double pLog_rn, pLog_pn, alpha, alpha1, alpha2;
+    bool need_update1, isBetaZeroFlag1, need_update2, isBetaZeroFlag2;
+    MatrixXd dmt1(maxRows, maxCols), logitm_Tmp, logitm_Tmp1, beta_Tmp1,
+    logitm_Tmp2, beta_Tmp2, yMp;
+    MatrixXi nzIndt1(maxRows * maxCols, 2);
+    VectorXd rowMax, log_values;
+    VectorXi yInd;
+    MAD = 0.0;
+    double delta = 0.5;
+    double sigma = 0.1;
+    
+    for (it1 = 0; it1 < eor_nr; ++it1)
+    {
+        
+        rn = eor(it1, 0) - 1;
+        pn = eor(it1, 1) - 1;
+        G(rn, pn) = G(pn, rn) = 0;
+        
+        if(Cycle(node, &G(0, 0), rn + 1, pn + 1))
+        {
+            n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
+            
+            // create a local copy of the design matrix of node pn
+            dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
+            
+            // update beta
+            MatrixXd grad(d1, r1), dif(d1, r1);
+            NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn), penalties(pn, rn), qtol, grad, dif, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+            
+            if (need_update1) {
+                
+                alpha = 1.0;
+                // use line search to update beta and logit matrix.
+                
+                lineSearch(betaM(pn, rn), beta_Tmp1, logitM(rn), logitm_Tmp1, yNZIndex(rn), penalties(pn, rn), nzIndt1, dmt1, dif, grad, alpha, delta, sigma, IsBetaZeros(pn, rn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+                
+                if (need_update1) {
+                    MAD = max(MAD, (beta_Tmp1-betaM(pn, rn)).lpNorm<Infinity>());
+                    betaM(pn, rn) = beta_Tmp1;
+                    logitM(rn) = logitm_Tmp1;
+                    IsBetaZeros(pn, rn) = isBetaZeroFlag1;
+                    
+                    //                    update intercept
+                    auto beta_inter_Tmp = betaM(node, rn);
+                    InterceptUpdate(n1, yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
+                    betaM(node, rn) = beta_inter_Tmp + alpha*(betaM(node, rn)-beta_inter_Tmp);
+                    MAD = max(MAD, (beta_inter_Tmp - betaM(node, rn)).lpNorm<Infinity>());
+                    
+                }
+            }
+            
+            // update the graph and the active set
+            if (!IsBetaZeros(pn, rn))
+            {
+                G(pn, rn) = 1;
+                active.push_back(it1);
+            }
+        }
+        
+        else if (Cycle(node, &G(0, 0), pn + 1, rn + 1))
+        {
+            n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
+            
+            // create a local copy of the design matrix of node rn
+            dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
+            
+            // update beta
+            MatrixXd grad(d1, r1), dif(d1, r1);
+            NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn), penalties(rn, pn), qtol, grad, dif, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+            
+            if (need_update1) {
+                
+                alpha = 1.0;
+                // use line search to update beta and logit matrix.
+                
+                lineSearch(betaM(rn, pn), beta_Tmp1, logitM(pn), logitm_Tmp1, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif, grad, alpha, delta, sigma, IsBetaZeros(rn, pn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+                
+                if (need_update1) {
+                    MAD = max(MAD, (beta_Tmp1-betaM(rn, pn)).lpNorm<Infinity>());
+                    betaM(rn, pn) = beta_Tmp1;
+                    logitM(pn) = logitm_Tmp1;
+                    IsBetaZeros(rn, pn) = isBetaZeroFlag1;
+                    
+                    // update intercept
+                    auto beta_inter_Tmp = betaM(node, pn);
+                    InterceptUpdate(n1, yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
+                    betaM(node, pn) = beta_inter_Tmp + alpha*(betaM(node, pn)-beta_inter_Tmp);
+                    MAD = max(MAD, (beta_inter_Tmp - betaM(node, pn)).lpNorm<Infinity>());
+                    
+                }
+            }
+            
+            // update the graph and the active set
+            if (!IsBetaZeros(rn, pn))
+            {
+                G(rn, pn) = 1;
+                active.push_back(it1);
+            }
+        }
+        
+        else
+        {
+            if (!IsBetaZeros(pn, rn))
+            {
+                // consider pn to rn
+                n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
+                dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
+                MatrixXd grad1(d1, r1), dif1(d1, r1);
+                NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn), penalties(pn, rn), qtol, grad1, dif1, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+                
+                // line search
+                if (need_update1) {
+                    
+                    alpha1 = 1.0;
+                    // use line search to update beta and logit matrix.
+                    
+                    lineSearch(betaM(pn, rn), beta_Tmp1, logitM(rn), logitm_Tmp1, yNZIndex(rn), penalties(pn, rn), nzIndt1, dmt1, dif1, grad1, alpha1, delta, sigma, IsBetaZeros(pn, rn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+                }
+                
+                if (!need_update1)
+                {
+                    // compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
+                    logitm_Tmp = logitM(rn);
+                    for (it2 = 0; it2 < rCount1; ++it2)
+                    {
+                        rInd = nzIndt1(it2, 0);
+                        cInd = nzIndt1(it2, 1);
+                        logitm_Tmp.row(rInd) -= betaM(pn, rn).row(cInd) * dmt1(rInd, cInd);
+                    }
+                    yInd = yNZIndex(rn);
+                    yMp = logitm_Tmp;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the rn^th penalized negative log-likelihood
+                    yMp = logitM(rn);
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn -= penalties(pn, rn) * (betaM(pn, rn)).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                else if (!isBetaZeroFlag1)
+                {
+                    // compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
+                    logitm_Tmp = logitM(rn);
+                    for (it2 = 0; it2 < rCount1; ++it2)
+                    {
+                        rInd = nzIndt1(it2, 0);
+                        cInd = nzIndt1(it2, 1);
+                        logitm_Tmp.row(rInd) -= betaM(pn, rn).row(cInd) * dmt1(rInd, cInd);
+                    }
+                    yInd = yNZIndex(rn);
+                    yMp = logitm_Tmp;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the rn^th penalized negative log-likelihood
+                    yMp = logitm_Tmp1;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn -= penalties(pn, rn) * (beta_Tmp1).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                else
+                {
+                    logitm_Tmp = logitm_Tmp1;
+                    pLog_rn = 0.0;
+                }
+                
+                
+                // consider rn to pn
+                n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
+                dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
+                MatrixXd grad2(d1, r1), dif2(d1, r1);
+                NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn),
+                                 penalties(rn, pn), qtol, grad2, dif2, logitm_Tmp2, beta_Tmp2, isBetaZeroFlag2, need_update2);
+                
+                // line search
+                if (need_update2) {
+                    
+                    alpha2 = 1.0;
+                    // use line search to update beta and logit matrix.
+                    
+                    lineSearch(betaM(rn, pn), beta_Tmp2, logitM(pn), logitm_Tmp2, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif2, grad2, alpha2, delta, sigma, IsBetaZeros(rn, pn), isBetaZeroFlag2, n1, rCount1, d1, r1, need_update2);
+                }
+                
+                if (!need_update2)
+                {
+                    pLog_pn = 0.0;
+                }
+                else
+                {
+                    // compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
+                    yInd = yNZIndex(pn);
+                    yMp = logitM(pn);
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the pn^th penalized negative log-likelihood
+                    yMp = logitm_Tmp2;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn -= penalties(rn, pn) * (beta_Tmp2).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                
+                if (pLog_pn <= pLog_rn)
+                {
+                    if (need_update1)
+                    {
+                        MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
+                        logitM(rn) = logitm_Tmp1;
+                        betaM(pn, rn) = beta_Tmp1;
+                        IsBetaZeros(pn, rn) = isBetaZeroFlag1;
+                        
+                        beta_Tmp1 = betaM(node, rn);
+                        InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
+                        betaM(node, rn) = beta_Tmp1 + alpha1*(betaM(node, rn)-beta_Tmp1);
+                        MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
+                    }
+                    if (!IsBetaZeros(pn, rn))
+                    {
+                        G(pn, rn) = 1;
+                        active.push_back(it1);
+                    }
+                }
+                else
+                {
+                    MAD = max(MAD, betaM(pn, rn).lpNorm<Infinity>());
+                    logitM(rn) = logitm_Tmp;
+                    betaM(pn, rn) = MatrixXd::Zero(ndfs(pn, rn), ndfs(rn, rn));
+                    IsBetaZeros(pn, rn) = true;
+                    
+                    beta_Tmp1 = betaM(node, rn);
+                    InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
+                    MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
+                    
+                    if (need_update2)
+                    {
+                        MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
+                        logitM(pn) = logitm_Tmp2;
+                        betaM(rn, pn) = beta_Tmp2;
+                        IsBetaZeros(rn, pn) = isBetaZeroFlag2;
+                        
+                        beta_Tmp2 = betaM(node, pn);
+                        InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
+                        betaM(node, pn) = beta_Tmp2 + alpha2*(betaM(node, pn)-beta_Tmp2);
+                        MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
+                    }
+                    if (!IsBetaZeros(rn, pn))
+                    {
+                        G(rn, pn) = 1;
+                        active.push_back(it1);
+                    }
+                }
+            }
+            else if (!IsBetaZeros(rn, pn))
+            {
+                // consider pn to rn
+                n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
+                dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
+                MatrixXd grad1(d1, r1), dif1(d1, r1);
+                NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn),
+                                 penalties(pn, rn), qtol, grad1, dif1, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+                
+                // line search
+                if (need_update1) {
+                    
+                    alpha1 = 1.0;
+                    // use line search to update beta and logit matrix.
+                    
+                    lineSearch(betaM(pn, rn), beta_Tmp1, logitM(rn), logitm_Tmp1, yNZIndex(rn), penalties(pn, rn), nzIndt1, dmt1, dif1, grad1, alpha1, delta, sigma, IsBetaZeros(pn, rn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+                }
+                
+                
+                if (!need_update1)
+                {
+                    pLog_rn = 0.0;
+                }
+                else
+                {
+                    // compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
+                    yInd = yNZIndex(rn);
+                    yMp = logitM(rn);
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the rn^th penalized negative log-likelihood
+                    yMp = logitm_Tmp1;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn -= penalties(pn, rn) * (beta_Tmp1).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                
+                // consider rn to pn
+                n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
+                dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
+                MatrixXd grad2(d1, r1), dif2(d1, r1);
+                NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn),
+                                 penalties(rn, pn), qtol, grad2, dif2, logitm_Tmp2, beta_Tmp2, isBetaZeroFlag2, need_update2);
+                
+                // line search
+                if (need_update2) {
+                    
+                    alpha2 = 1.0;
+                    // use line search to update beta and logit matrix.
+                    
+                    lineSearch(betaM(rn, pn), beta_Tmp2, logitM(pn), logitm_Tmp2, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif2, grad2, alpha2, delta, sigma, IsBetaZeros(rn, pn), isBetaZeroFlag2, n1, rCount1, d1, r1, need_update2);
+                }
+                
+                if (!need_update2)
+                {
+                    // compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
+                    logitm_Tmp = logitM(pn);
+                    for (it2 = 0; it2 < rCount1; ++it2)
+                    {
+                        rInd = nzIndt1(it2, 0);
+                        cInd = nzIndt1(it2, 1);
+                        logitm_Tmp.row(rInd) -= betaM(rn, pn).row(cInd) * dmt1(rInd, cInd);
+                    }
+                    yInd = yNZIndex(pn);
+                    yMp = logitm_Tmp;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the pn^th penalized negative log-likelihood
+                    yMp = logitM(pn);
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn -= penalties(rn, pn) * (betaM(rn, pn)).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                else if (!isBetaZeroFlag2)
+                {
+                    // compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
+                    logitm_Tmp = logitM(pn);
+                    for (it2 = 0; it2 < rCount1; ++it2)
+                    {
+                        rInd = nzIndt1(it2, 0);
+                        cInd = nzIndt1(it2, 1);
+                        logitm_Tmp.row(rInd) -= betaM(rn, pn).row(cInd) * dmt1(rInd, cInd);
+                    }
+                    yInd = yNZIndex(pn);
+                    yMp = logitm_Tmp;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the pn^th penalized negative log-likelihood
+                    yMp = logitm_Tmp2;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn -= penalties(rn, pn) * (beta_Tmp2).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                else
+                {
+                    logitm_Tmp = logitm_Tmp2;
+                    pLog_pn = 0.0;
+                }
+                
+                if (pLog_rn <= pLog_pn)
+                {
+                    if (need_update2)
+                    {
+                        MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
+                        logitM(pn) = logitm_Tmp2;
+                        betaM(rn, pn) = beta_Tmp2;
+                        IsBetaZeros(rn, pn) = isBetaZeroFlag2;
+                        
+                        beta_Tmp2 = betaM(node, pn);
+                        InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
+                        betaM(node, pn) = beta_Tmp2 + alpha2*(betaM(node, pn)-beta_Tmp2);
+                        MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
+                    }
+                    if (!IsBetaZeros(rn, pn))
+                    {
+                        G(rn, pn) = 1;
+                        active.push_back(it1);
+                    }
+                }
+                else
+                {
+                    MAD = max(MAD, betaM(rn, pn).lpNorm<Infinity>());
+                    logitM(pn) = logitm_Tmp;
+                    betaM(rn, pn) = MatrixXd::Zero(ndfs(rn, pn), ndfs(pn, pn));
+                    IsBetaZeros(rn, pn) = true;
+                    
+                    beta_Tmp2 = betaM(node, pn);
+                    InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
+                    MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
+                    
+                    if (need_update1)
+                    {
+                        MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
+                        logitM(rn) = logitm_Tmp1;
+                        betaM(pn, rn) = beta_Tmp1;
+                        IsBetaZeros(pn, rn) = isBetaZeroFlag1;
+                        
+                        beta_Tmp1 = betaM(node, rn);
+                        InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
+                        betaM(node, rn) = beta_Tmp1 + alpha1*(betaM(node, rn)-beta_Tmp1);
+                        MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
+                    }
+                    if (!IsBetaZeros(pn, rn))
+                    {
+                        G(pn, rn) = 1;
+                        active.push_back(it1);
+                    }
+                }
+            }
+            else
+            {
+                // consider pn to rn
+                n1 = nobsVec(rn);	d1 = ndfs(pn, rn);	r1 = ndfs(rn, rn);
+                dmFetch(dmt1, nzIndt1, rCount1, dM(pn), n1, d1, obsIndex(rn), levelIndex(pn, rn), scales(pn, rn));
+                MatrixXd grad1(d1, r1), dif1(d1, r1);
+                NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(rn), nzIndt1, logitM(rn), betaM(pn, rn), IsBetaZeros(pn, rn), hvals(pn, rn),
+                                 penalties(pn, rn), qtol, grad1, dif1, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+                
+                // line search
+                if (need_update1) {
+                    
+                    alpha1 = 1.0;
+                    // use line search to update beta and logit matrix.
+                    
+                    lineSearch(betaM(pn, rn), beta_Tmp1, logitM(rn), logitm_Tmp1, yNZIndex(rn), penalties(pn, rn), nzIndt1, dmt1, dif1, grad1, alpha1, delta, sigma, IsBetaZeros(pn, rn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+                }
+                
+                if (!need_update1)
+                {
+                    pLog_rn = 0.0;
+                }
+                else
+                {
+                    // compute the rn^th penalized negative log-likelihood assuming that all beta for node pn are zero
+                    yInd = yNZIndex(rn);
+                    yMp = logitM(rn);
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the rn^th penalized negative log-likelihood
+                    yMp = logitm_Tmp1;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_rn -= penalties(pn, rn) * (beta_Tmp1).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_rn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                
+                // consider rn to pn
+                n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
+                dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
+                MatrixXd grad2(d1, r1), dif2(d1, r1);
+                NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn),
+                                 penalties(rn, pn), qtol, grad2, dif2, logitm_Tmp2, beta_Tmp2, isBetaZeroFlag2, need_update2);
+                
+                // line search
+                if (need_update2) {
+                    
+                    alpha2 = 1.0;
+                    // use line search to update beta and logit matrix.
+                    
+                    lineSearch(betaM(rn, pn), beta_Tmp2, logitM(pn), logitm_Tmp2, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif2, grad2, alpha2, delta, sigma, IsBetaZeros(rn, pn), isBetaZeroFlag2, n1, rCount1, d1, r1, need_update2);
+                }
+                
+                if (!need_update2)
+                {
+                    pLog_pn = 0.0;
+                }
+                else
+                {
+                    // compute the pn^th penalized negative log-likelihood assuming that all beta for node rn are zero
+                    yInd = yNZIndex(pn);
+                    yMp = logitM(pn);
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn = 0.0;
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn += log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                    
+                    // compute the difference in the pn^th penalized negative log-likelihood
+                    yMp = logitm_Tmp2;
+                    rowMax = yMp.rowwise().maxCoeff();
+                    yMp.colwise() -= rowMax;
+                    log_values = yMp.array().exp().rowwise().sum().log();
+                    pLog_pn -= penalties(rn, pn) * (beta_Tmp2).norm();
+                    for (it2 = 0; it2 < n1; ++it2)
+                    {
+                        pLog_pn -= log_values(it2) - yMp(it2, yInd(it2));
+                    }
+                }
+                
+                if (pLog_pn <= pLog_rn)
+                {
+                    if (need_update1)
+                    {
+                        MAD = max(MAD, (beta_Tmp1 - betaM(pn, rn)).lpNorm<Infinity>());
+                        logitM(rn) = logitm_Tmp1;
+                        betaM(pn, rn) = beta_Tmp1;
+                        IsBetaZeros(pn, rn) = isBetaZeroFlag1;
+                        
+                        beta_Tmp1 = betaM(node, rn);
+                        InterceptUpdate(nobsVec(rn), yM(rn), logitM(rn), betaM(node, rn), hvals(node, rn), qtol);
+                        betaM(node, rn) = beta_Tmp1 + alpha1*(betaM(node, rn)-beta_Tmp1);
+                        MAD = max(MAD, (beta_Tmp1 - betaM(node, rn)).lpNorm<Infinity>());
+                    }
+                    if (!IsBetaZeros(pn, rn))
+                    {
+                        G(pn, rn) = 1;
+                        active.push_back(it1);
+                    }
+                }
+                else
+                {
+                    if (need_update2)
+                    {
+                        MAD = max(MAD, (beta_Tmp2 - betaM(rn, pn)).lpNorm<Infinity>());
+                        logitM(pn) = logitm_Tmp2;
+                        betaM(rn, pn) = beta_Tmp2;
+                        IsBetaZeros(rn, pn) = isBetaZeroFlag2;
+                        
+                        beta_Tmp2 = betaM(node, pn);
+                        InterceptUpdate(nobsVec(pn), yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
+                        betaM(node, pn) = beta_Tmp2 + alpha2*(betaM(node, pn)-beta_Tmp2);
+                        MAD = max(MAD, (beta_Tmp2 - betaM(node, pn)).lpNorm<Infinity>());
+                    }
+                    if (!IsBetaZeros(rn, pn))
+                    {
+                        G(rn, pn) = 1;
+                        active.push_back(it1);
+                    }
+                }
+            }
+        }
+    }
 }
 
 
 
 void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eor, const double& eps, const VectorXi& nobsVec,
-               const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
-			   MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
-			   const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
+                const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
+                MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
+                const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
 {
-	double MAD;
-	unsigned int num;
+    double MAD;
+    unsigned int num;
     unsigned int times1, times2;
     times1 = 0;
-	while(true)
-	{
-		vector<int> active;
-        vector<int> numbers, n_random;
-//        MatrixXi eor_random(eor_nr, 2);
-//
-//        for (int i = 0; i < eor_nr; i++) {
-//            numbers.push_back(i);
-//        }
-//        n_random = SampleNoReplace(numbers, eor_nr);
-//
-//        for (int i = 0; i < eor_nr; i++) {
-//            eor_random(i, 0) = eor(n_random[i], 0);
-//            eor_random(i, 1) = eor(n_random[i], 1);
-//        }
-//
+    
+    MatrixXi activeSet_old = eor; // Store the previous active set. And compare with the new active set, if the two active sets are the same, stop the algorithm.
+    
+    while(true)
+    {
+        vector<int> active;
+        vector<int> numbers;
+        
 		OneCDLoop(node, G, eor_nr, eor, active, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
 				 IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
 
         times1++;
-		if(MAD < eps || times1 > 50)	{
-            if (times1 > 50) {
-                // cout << endl;
-                Rprintf("\n");
-                // cout << "the " << "outer iteration reaches maximum" << endl;
-                Rprintf("the outer iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 1 for help.");
-            }
-            break;
-        }
 
 		num = active.size();
 		MatrixXi activeSet(num, 2);
-		for(unsigned int iter = 0; iter < num; ++iter)
-		{
-			activeSet.row(iter) = eor.row(active[iter]);
-		}
-
+        
+        int num_cnt = 0;
+        
+        for (int row = 0; row < node; row++) {
+            for (int col = 0; col < node; col++) {
+                if (G(row, col)) {
+                    activeSet(num_cnt, 0) = col+1;
+                    activeSet(num_cnt, 1) = row+1;
+                    num_cnt++;
+                }
+            }
+        }
+        
+        if (activeSet_old.size()/2 == num) {
+            if ((activeSet - activeSet_old).norm() == 0) {
+                // break if one more outer loop will not change the active set.
+                break;
+            }
+        }
+        
+        if(MAD < eps)	{
+            // break if coefficient converges
+            break;
+        }
+        
+        // inner loop
+        // Algorithm 2
         times2 = 0;
-
 
 		while(true)
 		{
 			vector<int> sactive;
-			LineSearch_noZero(node, G, num, activeSet, sactive, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
+			innerLearning(node, G, num, activeSet, sactive, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
 					  IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
 
             times2++;
-			if(MAD < eps || times2 > 50000) {
-                if (times2 > 50000) {
-                    // cout << endl;
+			if(MAD < eps || times2 > 1000) {
+                // throw out warning if inner loop reaches maximum number of iterations.
+                if (times2 > 1000) {
                     Rprintf("\n");
-                    // cout << "the " << times1 << "th inner part reaches maximum" << endl;
                     Rprintf("the %d th inner iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help.", times1);
                 }
                 break;
             }
 		}
+        
+        // break if the outer loop reaches maximum number of iterations
+        if(times1 > 50)	{
+            Rprintf("\n");
+            Rprintf("the outer iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 1 for help.");
+            break;
+        }
     }
 }
 
@@ -1265,7 +1283,6 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 	else if(upperbound == -1.0) // no truncation
 		weights = weights.array().pow(gamma);
 	else
-		// cout << "upperbound should be positive!" << endl << endl;
 		Rprintf("upperbound sould be positive!");
 
 	// create the full design matrix dM for each node (including the baseline column which is assumed to be the last factor level)
@@ -1486,7 +1503,6 @@ void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nle
     else if(upperbound == -1.0) // no truncation
         weights = weights.array().pow(gamma);
     else
-        // cout << "upperbound should be positive!" << endl << endl;
         Rprintf("upperbound sould be positive!");
 
     // create the full design matrix dM for each node (including the baseline column which is assumed to be the last factor level)
