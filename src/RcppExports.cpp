@@ -49,3 +49,23 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// CD_learning
+List CD_learning(int node, int dataSize, Eigen::Map<Eigen::MatrixXi> data, Eigen::Map<Eigen::VectorXi> nlevels, List obsIndex_R, int eor_nr, Eigen::Map<Eigen::MatrixXi> eor, double eps, double convLb, double qtol);
+RcppExport SEXP discretecdAlgorithm_CD_learning(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP eor_nrSEXP, SEXP eorSEXP, SEXP epsSEXP, SEXP convLbSEXP, SEXP qtolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< int >::type dataSize(dataSizeSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXi> >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXi> >::type nlevels(nlevelsSEXP);
+    Rcpp::traits::input_parameter< List >::type obsIndex_R(obsIndex_RSEXP);
+    Rcpp::traits::input_parameter< int >::type eor_nr(eor_nrSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXi> >::type eor(eorSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< double >::type convLb(convLbSEXP);
+    Rcpp::traits::input_parameter< double >::type qtol(qtolSEXP);
+    __result = Rcpp::wrap(CD_learning(node, dataSize, data, nlevels, obsIndex_R, eor_nr, eor, eps, convLb, qtol));
+    return __result;
+END_RCPP
+}

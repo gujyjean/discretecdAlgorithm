@@ -72,7 +72,7 @@ lambda_call <- function(indata,
   data_matrix <- as.matrix(data_matrix)
 
   # get n_levels.
-  n_levels <- as.integer(sapply(indata$levels, function(x){length(x)}))
+  n_levels <- as.integer(sapply(data$levels, function(x){length(x)}))
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)
