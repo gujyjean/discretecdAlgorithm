@@ -117,15 +117,22 @@ List CD( int node,
          nlam, eps, convLb, qtol, lambdaSeq, log_like, dur, betaM, betaN,
          estimateG, t_weights, gamma, upperbound);
 
-  IntegerMatrix outputG(node*nlam, node);
-  for (int i=0; i<(node*nlam); i++) {
+  NumericMatrix adaptWeights(node, node);
+  for (int i=0; i<node; i++) {
     for (int j=0; j<node; j++) {
-      outputG(i, j) = estimateG(i, j);
+      adaptWeights(i, j) = betaM(i, j).norm();
     }
   }
+
+  // IntegerMatrix outputG(node*nlam, node);
+  // for (int i=0; i<(node*nlam); i++) {
+  //   for (int j=0; j<node; j++) {
+  //     outputG(i, j) = estimateG(i, j);
+  //   }
+  // }
   // should return lambdaSeq, time.
-  // return estimateG;
-  return List::create(_["estimateG"] = wrap(estimateG), _["time"] = wrap(dur));
+  // return estimateG, adaptive weight matrix, and timing, ;
+  return List::create(_["estimateG"] = wrap(estimateG), _["time"] = wrap(dur), _["adaptive_weights"] = wrap(adaptWeights));
 }
 
 // [[Rcpp::export]]

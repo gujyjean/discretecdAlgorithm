@@ -40,3 +40,12 @@ get_obsIndex <- function(ivn, node) {
   }, ivn)
   return(obsIndex)
 }
+
+# to get adaptive weights if given L2 norm of parameters
+get_adaptWeights <- function(beta_l2, max.weights = 10^5) {
+  beta_l2 <- beta_l2 + t(beta_l2)
+  cd.weights <- 1/beta_l2
+  cd.weights[which(cd.weights==Inf)] = max.weights
+
+  return(cd.weights)
+}

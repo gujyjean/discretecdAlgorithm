@@ -88,20 +88,45 @@ cd.run <- function(indata,
                    error.tol=0.0001,
                    convLb=0.01,
                    weight.scale=1.0,
-                   upperbound = 100.0) {
+                   upperbound = 100.0,
+                   adaptive = FALSE) {
 
-  CD_call(indata = indata,
-          eor = NULL,
-          weights = weights,
-          lambda_seq = lambdas,
-          fmlam = 0.1,
-          nlam = lambdas.length,
-          eps = error.tol,
-          convLb = convLb,
-          qtol = error.tol,
-          gamma = weight.scale,
-          upperbound = upperbound)
+  cd_adaptive_run(indata = indata,
+                  eor = NULL,
+                  weights = weights,
+                  lambda_seq = lambdas,
+                  fmlam = 0.01,
+                  nlam = lambdas.length,
+                  eps = error.tol,
+                  convLb = convLb,
+                  qtol = error.tol,
+                  gamma = weight.scale,
+                  upperbound = upperbound,
+                  adaptive = adaptive)
 
+}
+
+cd_adaptive_run <- function(indata,
+                            eor,
+                            weights,
+                            lambda_seq,
+                            fmlam,
+                            nlam,
+                            eps,
+                            convLb,
+                            qtol,
+                            gamma,
+                            upperbound,
+                            adaptive)
+{
+  if (adaptive == FALSE) {
+    return(CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound)$fit)
+  }
+  else {
+    cd_call_out <- CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound)
+    adaptive_weights <- cd_call_out$adaptive_weights
+    return(CD_call(indata, eor, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound)$fit)
+  }
 }
 
 # Convert input to the right form.
@@ -234,9 +259,10 @@ CD_call <- function(indata,
   # lambda <- estimate$lambdas
   # extract adjacency matrix
   estimateG <- estimate$estimateG
-  # timing data is not available yet. Fill in NA tempararily.
-  # time = rep(NA, nlam)
   time <- estimate$time
+  beta_l2 <- estimate$adaptive_weights
+
+  adaptive_weights <- get_adaptWeights(beta_l2)
 
   # convert each element in fit to sparsebnFit object
   fit <- get.edgeList(estimateG, dataSize, lambda_seq, time)
@@ -258,7 +284,8 @@ CD_call <- function(indata,
   # convert fit to sparsebnPath object
   fit <- sparsebnUtils::sparsebnPath(fit)
 
-  return(fit)
+  return(list(fit = fit, adaptive_weights = adaptive_weights))
+  # return(fit)
 }
 
 # a function that directly calls from cpp

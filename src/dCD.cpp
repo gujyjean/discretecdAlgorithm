@@ -518,7 +518,7 @@ void innerLearning(const int& node, MatrixXi& G, const int& eor_nr, const Matrix
             double delta = 0.5;
             double sigma = 0.1;
 
-            lineSearch(betaM(rn, pn), beta_Tmp1, logitM(pn), logitm_Tmp1, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif, grad, alpha, delta, sigma, IsBetaZeros(pn, rn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+            lineSearch(betaM(rn, pn), beta_Tmp1, logitM(pn), logitm_Tmp1, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif, grad, alpha, delta, sigma, IsBetaZeros(rn, pn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
 
             if (need_update1) {
                 MAD = max(MAD, (beta_Tmp1-betaM(rn, pn)).lpNorm<Infinity>());
@@ -528,11 +528,11 @@ void innerLearning(const int& node, MatrixXi& G, const int& eor_nr, const Matrix
 
                 auto beta_inter_Tmp = betaM(node, pn);
                 InterceptUpdate(n1, yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
-                betaM(node, pn) = beta_inter_Tmp + alpha*(betaM(node, rn)-beta_inter_Tmp);
-                MAD = max(MAD, (beta_inter_Tmp - betaM(node, rn)).lpNorm<Infinity>());
+                betaM(node, pn) = beta_inter_Tmp + alpha*(betaM(node, pn)-beta_inter_Tmp);
+                MAD = max(MAD, (beta_inter_Tmp - betaM(node, pn)).lpNorm<Infinity>());
 
                 if (IsBetaZeros(rn, pn)) {
-                    G(pn, rn) = 0;
+                    G(rn, pn) = 0;
                 }
                 else {
                     G(rn, pn) = 1;
@@ -1208,8 +1208,8 @@ void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi&
         for (int row = 0; row < node; row++) {
             for (int col = 0; col < node; col++) {
                 if (G(row, col)) {
-                    activeSet(num_cnt, 0) = col+1;
-                    activeSet(num_cnt, 1) = row+1;
+                    activeSet(num_cnt, 0) = row+1;
+                    activeSet(num_cnt, 1) = col+1;
                     num_cnt++;
                 }
             }
@@ -1218,12 +1218,14 @@ void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi&
         if (activeSet_old.size()/2 == num) {
             if ((activeSet - activeSet_old).norm() == 0) {
                 // break if one more outer loop will not change the active set.
+                // cout << "has " << times1 << "outer part" << endl;
                 break;
             }
         }
 
         if(MAD < eps)	{
             // break if coefficient converges
+            // cout << "has " << times1 << "outer part" << endl;
             break;
         }
 
@@ -1390,6 +1392,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 	MatrixXd hvals(node + 1, node);
 	for (int it1 = 0; it1 < nlam; ++it1)
 	{
+	  // Rcpp::Rcout << "\n the " << it1 << "th lambda \n";
 		// update the Hessian
 		/* we use the fact that the coding scheme is baseline coding (i.e., 0-1 dummy variables) to update the Hessian matrix */
 		for (int j = 0; j < node; ++j)
@@ -1591,6 +1594,9 @@ void maxLambda(int node, int dataSize, const MatrixXi& data, const VectorXi& nle
         }
         /*  begin initializing intercepts  */
         RowVectorXd counts = yM(j).colwise().sum();
+        if (counts(0) == 0.0) {
+          counts(0) = pow(10, -10);
+        }
         counts /= counts(0);
         counts = counts.array().log();
         counts(0) = 0.0;
@@ -1656,6 +1662,10 @@ void CDOrder(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eo
     {
       G(rn, pn) = 1;
     }
+    else
+    {
+      G(rn, pn) = 0;
+    }
   }
 }
 
@@ -1664,35 +1674,46 @@ void CDOnePoint_learning(const int& node, MatrixXi& G, const int& eor_nr, const 
                          MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
                          const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
 {
-  double MAD;
-  unsigned int num;
-  unsigned int times2;
+    double MAD;
+    unsigned int num;
+    unsigned int times2;
 
-  CDOrder(node, G, eor_nr, eor, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM, IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
+    int times1 = 0;
 
-  num = eor_nr;
-  MatrixXi activeSet = eor;
+    while(true)
+    {
+        CDOrder(node, G, eor_nr, eor, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM, IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
 
-  // inner loop
+        if(MAD < eps || times1 > 1000) {
+            if(times1 > 1000) {
+                Rprintf("When estimating adaptive weights. Iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help. \n");
+            }
+            break;
+        }
 
-  times2 = 0;
+        // num = eor_nr;
+        // MatrixXi activeSet = eor;
 
-  while(true)
-  {
-    vector<int> sactive;
-    innerLearning(node, G, num, activeSet, sactive, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
-                  IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
-    times2++;
+        // // inner loop
 
-    if(MAD < eps || times2 > 1000) {
-      if (times2 > 1000) {
-        Rprintf("\n");
-        Rprintf("the inner iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help.");
-      }
-      break;
+        // times2 = 0;
+
+        // while(true)
+        // {
+        //     vector<int> sactive;
+        //     innerLearning(node, G, num, activeSet, sactive, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
+        //           IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
+        //     times2++;
+
+        //     if(MAD < eps || times2 > 1000) {
+        //         if (times2 > 1000) {
+        //             Rprintf("\n");
+        //             Rprintf("When estimating adaptive weights. Iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help. \n");
+        //         }
+        //     break;
+        //     }
+        // }
     }
-  }
-
 }
 
 void CD_learning(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, double eps, double convLb, double qtol, double& log_like, MatrixXMXd& betaM, MatrixXd& adaptWeights)
