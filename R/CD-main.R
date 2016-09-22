@@ -229,7 +229,7 @@ CD_call <- function(indata,
                            weights,
                            gamma,
                            upperbound)
-    lambda_seq <- sparsebnUtils::generate.lambdas(lambda.max = lambda_m, lambdas.ratio = fmlam, lambdas.length = nlam, scale = "log")
+    lambda_seq <- sparsebnUtils::generate.lambdas(lambda.max = lambda_m, lambdas.ratio = fmlam, lambdas.length = nlam, scale = "linear")
   }
   else {
     nlam = length(lambda_seq)
