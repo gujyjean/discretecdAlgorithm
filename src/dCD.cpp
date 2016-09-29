@@ -1244,16 +1244,16 @@ void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi&
                 // throw out warning if inner loop reaches maximum number of iterations.
                 if (times2 > 1000) {
                     Rprintf("\n");
-                    Rprintf("the %d th inner iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help.", times1);
+                    Rprintf("the %d th inner iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 2 for help. \n", times1);
                 }
                 break;
             }
 		}
 
         // break if the outer loop reaches maximum number of iterations
-        if(times1 > 50)	{
+        if(times1 > 20)	{
             Rprintf("\n");
-            Rprintf("the outer iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 1 for help.");
+            Rprintf("the outer iteration reaches maximum. See Adaptive Penalized Estimation of Directed Acyclic Graphs From Categorical Data (http://arxiv.org/abs/1403.2310). Chapter 3.2 Algorithm 1 for help. \n");
             break;
         }
     }
