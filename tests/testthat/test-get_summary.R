@@ -26,9 +26,9 @@ test_that("input adjacency matrix can be converted to the right edge list.", {
   expect_equal(get.summary(adj_matrix_oneparent, dataSize, lambda, time)$nedge, 3)
   true_edgeList_one <- vector("list", length = 4)
   true_edgeList_one[[1]] <- integer(0)
-  true_edgeList_one[[2]] <- 4
-  true_edgeList_one[[3]] <- 4
-  true_edgeList_one[[4]] <- 4
+  true_edgeList_one[[2]] <- 4L
+  true_edgeList_one[[3]] <- 4L
+  true_edgeList_one[[4]] <- 4L
   true_edgeList_one <- sparsebnUtils::edgeList(true_edgeList_one)
   expect_equal(get.summary(adj_matrix_oneparent, dataSize, lambda, time)$edges, true_edgeList_one)
 

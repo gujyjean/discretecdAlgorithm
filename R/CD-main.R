@@ -205,6 +205,7 @@ CD_call <- function(indata,
     }
   }
 
+  # eor <- eor[sample(1:eor_nr), ]
   eor_nr <- as.integer(eor_nr)
   eor <- matrix(as.integer(eor), ncol = 2)
 
