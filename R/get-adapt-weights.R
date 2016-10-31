@@ -26,7 +26,7 @@ get.adaptive.weights <- function(DAG,
 adaptiveWeights_call <- function(DAG, databn, eps, convLb, qtol) {
   # Check data format
   if (!sparsebnUtils::is.sparsebnFit(DAG)) stop("DAG must be a sparsebnFit object!")
-  if(!sparsebnUtils::is.sparsebnData(databn)) stop(sparsebnUtils::input_not_sparsebnData(data))
+  if(!sparsebnUtils::is.sparsebnData(databn)) stop(sparsebnUtils::input_not_sparsebnData(databn))
   if (!is.numeric(eps)) stop("error.tol must be a small numeric positive number!")
   else {
     if (eps <= 0) {

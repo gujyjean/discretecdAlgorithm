@@ -5,7 +5,8 @@
 \title{cd.run}
 \usage{
 cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
-  error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100)
+  error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100,
+  adaptive = FALSE)
 }
 \arguments{
 \item{indata}{A sparsebnData object.}
@@ -31,6 +32,9 @@ See function \code{\link{max_lambda}} for details.}
 
 \item{upperbound}{A large positive value used to truncate the adaptive weights.
 A -1 value indicates that there is no truncation.}
+
+\item{adaptive}{A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
+If TRUE, an adaptive lasso algorithm will be run.}
 }
 \value{
 A \code{\link[sparsebnUtils]{sparsebnPath}} object.

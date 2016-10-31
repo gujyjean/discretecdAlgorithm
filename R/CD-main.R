@@ -46,6 +46,8 @@ NULL
 #' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights.
 #'        A -1 value indicates that there is no truncation.
+#' @param adaptive A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
+#'        If TRUE, an adaptive lasso algorithm will be run.
 #' @return A \code{\link[sparsebnUtils]{sparsebnPath}} object.
 #'         The CD Algorithm will be stoped if the number of edges exceeds 3 times of number of variables.
 #' @examples
