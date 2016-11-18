@@ -3,6 +3,7 @@
 #' A function that will return adaptive weights, and log-likelihood of the estimation.
 #'
 #' This function takes a dag as an input
+#' (This function is not exported yet. Result is unstable.)
 #'
 #' @param DAG A \code{\link[sparsebnUtils]{sparsebnFit}} object.
 #' @param databn A \code{\link[sparsebnUtils]{sparsebnData}} object.
@@ -11,7 +12,6 @@
 #'
 #' @return A list of the adaptive weight matrix, and log-likelihood of estimation.
 
-#' @export
 get.adaptive.weights <- function(DAG,
                                  databn,
                                  error.tol=0.0001,

@@ -72,6 +72,8 @@ dat_int <- sparsebnUtils::sparsebnData(dat, ivn = ivn, type = "discrete")
 cd.run(indata = dat_obs)
 # Run with default settings for interventional data
 cd.run(indata = dat_int)
+# Run adaptive algorithm for observational data
+cd.run(indata = dat_obs, adaptive = TRUE)
 
 ### Optional: Adjust settings
 n_node <- ncol(dat)

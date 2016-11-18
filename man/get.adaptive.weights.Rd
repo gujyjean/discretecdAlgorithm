@@ -23,5 +23,6 @@ A function that will return adaptive weights, and log-likelihood of the estimati
 }
 \details{
 This function takes a dag as an input
+(This function is not exported yet. Result is unstable.)
 }
 
