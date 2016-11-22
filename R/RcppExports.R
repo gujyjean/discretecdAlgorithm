@@ -9,7 +9,3 @@ lambdaMax <- function(node, dataSize, data, nlevels, obsIndex_R, weights, gamma,
     .Call('discretecdAlgorithm_lambdaMax', PACKAGE = 'discretecdAlgorithm', node, dataSize, data, nlevels, obsIndex_R, weights, gamma, upperbound)
 }
 
-CD_learning <- function(node, dataSize, data, nlevels, obsIndex_R, eor_nr, eor, eps, convLb, qtol) {
-    .Call('discretecdAlgorithm_CD_learning', PACKAGE = 'discretecdAlgorithm', node, dataSize, data, nlevels, obsIndex_R, eor_nr, eor, eps, convLb, qtol)
-}
-
