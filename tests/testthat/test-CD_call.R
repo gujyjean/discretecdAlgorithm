@@ -40,5 +40,5 @@ databn <- sparsebnUtils::sparsebnData(data, ivn = ivn, type = "discrete")
 # test
 test_that("CD_call runs as expected", {
   ### no error
-  expect_error(CD_call(databn, eor = NULL, weights = NULL, lambda_seq = NULL, fmlam = 0.1, nlam = 30, eps = 0.0001, convLb = 0.01, qtol = 0.0001, gamma = 1, upperbound = 100), NA)
+  expect_error(CD_call(databn, eor = NULL, weights = NULL, lambda_seq = NULL, fmlam = 0.1, nlam = 30, eps = 0.0001, convLb = 0.01, qtol = 0.0001, gamma = 1, upperbound = 100, threshold = 3), NA)
 })

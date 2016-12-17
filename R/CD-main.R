@@ -46,6 +46,8 @@ NULL
 #' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights.
 #'        A -1 value indicates that there is no truncation.
+#' @param alpha Threshold parameter used to terminate the algorithm whenever the number of edges in the
+#'              current DAG estimate is \code{> alpha * ncol(data)}.
 #' @param adaptive A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
 #'        If TRUE, an adaptive lasso algorithm will be run.
 #' @return A \code{\link[sparsebnUtils]{sparsebnPath}} object.
@@ -93,6 +95,7 @@ cd.run <- function(indata,
                    convLb=0.01,
                    weight.scale=1.0,
                    upperbound = 100.0,
+                   alpha = 3,
                    adaptive = FALSE) {
 
   cd_adaptive_run(indata = indata,
@@ -106,6 +109,7 @@ cd.run <- function(indata,
                   qtol = error.tol,
                   gamma = weight.scale,
                   upperbound = upperbound,
+                  threshold = alpha,
                   adaptive = adaptive)
 
 }
@@ -121,15 +125,16 @@ cd_adaptive_run <- function(indata,
                             qtol,
                             gamma,
                             upperbound,
+                            threshold,
                             adaptive)
 {
   if (adaptive == FALSE) {
-    return(CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound)$fit)
+    return(CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound,threshold)$fit)
   }
   else {
-    cd_call_out <- CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound)
+    cd_call_out <- CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)
     adaptive_weights <- cd_call_out$adaptive_weights
-    return(CD_call(indata, eor, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound)$fit)
+    return(CD_call(indata, eor, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
   }
 }
 
@@ -144,7 +149,8 @@ CD_call <- function(indata,
                     convLb,
                     qtol,
                     gamma,
-                    upperbound) {
+                    upperbound,
+                    threshold) {
 
   # Allow users to input a data.frame, but kindly warn them about doing this.
   # if the input is a dataframe, the data set is treated as an observational data set.
@@ -227,6 +233,7 @@ CD_call <- function(indata,
   qtol = as.numeric(qtol)
   gamma = as.numeric(gamma)
   upperbound = as.numeric(upperbound)
+  threshold = as.integer(threshold)
 
   # check/generate lambda sequence
   if(is.null(lambda_seq)) {
@@ -258,7 +265,8 @@ CD_call <- function(indata,
                       qtol,
                       weights,
                       gamma,
-                      upperbound)
+                      upperbound,
+                      threshold)
 
   # extract lambdas
   # lambda <- estimate$lambdas
@@ -309,7 +317,8 @@ CD_path <- function(node,
                     qtol,
                     weights,
                     gamma,
-                    upperbound) {
+                    upperbound,
+                    threshold) {
   # check node parameter
   if(!is.integer(node)) stop("node must be a integer!")
   if(node <= 0) stop("node must be a positive integer!")
@@ -372,6 +381,10 @@ CD_path <- function(node,
   if (!is.numeric(upperbound)) stop("upperbound must be a numeric number!")
   if (upperbound <= 0 && upperbound!=-1) stop("upperbound must be a large positive integer to truncate the adaptive weights. Or it can be -1, which indicates that there is no truncation!")
 
+  # check threshold
+  if (!is.integer(threshold)) stop("threshold (alpha) must be an integer number!")
+  if (threshold <= 0) stop("threshold (alpha must be a positive integer!")
+
   CD.out <- CD(node,
                dataSize,
                data_matrix,
@@ -386,7 +399,8 @@ CD_path <- function(node,
                qtol,
                weights,
                gamma,
-               upperbound)
+               upperbound,
+               threshold)
 
   return(CD.out)
 }

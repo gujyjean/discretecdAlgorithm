@@ -27,9 +27,9 @@ void CDOnePoint(const int& node, Eigen::MatrixXi& G, const int& eor_nr, const Ei
 			   const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols);
 void CDAlgo(int node, int dataSize, const Eigen::MatrixXi& data, const Eigen::VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex,
 			int eor_nr, const Eigen::MatrixXi& eor, int nlam, double eps, double convLb, double qtol, Eigen::VectorXd& lambdaSeq, Eigen::VectorXd& log_like, Eigen::VectorXd& dur,
-            MatrixXMXd& betaM, MatrixXMXd& betaN, Eigen::MatrixXi& estimateG, Eigen::MatrixXd& weights, double gamma, double upperbound = -1.0);
+            MatrixXMXd& betaM, MatrixXMXd& betaN, Eigen::MatrixXi& estimateG, Eigen::MatrixXd& weights, double gamma, double upperbound = -1.0, int threshold = 3);
 void maxLambda(int node, int dataSize, const Eigen::MatrixXi& data, const Eigen::VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, MatrixXMXd& betaM, Eigen::MatrixXd& weights, double& lambda, double gamma, double upperbound = -1.0);
-void CD_learning(int node, int dataSize, const Eigen::MatrixXi& data, const Eigen::VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex,
-                 int eor_nr, const Eigen::MatrixXi& eor, double eps, double convLb, double qtol, double& log_like, MatrixXMXd& betaM, Eigen::MatrixXd& adaptWeights);
+// void CD_learning(int node, int dataSize, const Eigen::MatrixXi& data, const Eigen::VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex,
+                 // int eor_nr, const Eigen::MatrixXi& eor, double eps, double convLb, double qtol, double& log_like, MatrixXMXd& betaM, Eigen::MatrixXd& adaptWeights);
 
 #endif

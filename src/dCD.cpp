@@ -1274,7 +1274,7 @@ Let's define the jth problem as follows: using node j as the response and all ot
 6. yNZIndex: a p by 1 vector. Each element j is a vector whose hth element is the nonzero level for node j in sample h.
 7. upperbound: a large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 */
-void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, int nlam, double eps, double convLb, double qtol, VectorXd& lambdaSeq, VectorXd& log_like, VectorXd& dur, MatrixXMXd& betaM, MatrixXMXd& betaN, MatrixXi& estimateG, MatrixXd& weights, double gamma, double upperbound)
+void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, int nlam, double eps, double convLb, double qtol, VectorXd& lambdaSeq, VectorXd& log_like, VectorXd& dur, MatrixXMXd& betaM, MatrixXMXd& betaN, MatrixXi& estimateG, MatrixXd& weights, double gamma, double upperbound, int threshold)
 {
 	int maxRows = dataSize, maxCols = nlevels.maxCoeff(); //nlevels record number of levels for each node.
 	if(upperbound >= 0.0) // to calculate weights
@@ -1492,7 +1492,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
         }
 
         // to make sure sparsity of DAG
-        if (P >= 3*node) {
+        if (P >= threshold*node) {
             break;
         }
 	}

@@ -42,7 +42,8 @@ List CD( int node,
                     double qtol,
                     Eigen::Map<Eigen::MatrixXd> weights,
                     double gamma,
-                    double upperbound
+                    double upperbound,
+                    int threshold
 ) {
 
   // convert Rcpp type to C++ type
@@ -115,7 +116,7 @@ List CD( int node,
 
   CDAlgo(node, dataSize, t_data, t_nlevels, obsIndex, levelIndex, eor_nr, t_eor,
          nlam, eps, convLb, qtol, lambdaSeq, log_like, dur, betaM, betaN,
-         estimateG, t_weights, gamma, upperbound);
+         estimateG, t_weights, gamma, upperbound, threshold);
 
   NumericMatrix adaptWeights(node, node);
   for (int i=0; i<node; i++) {
