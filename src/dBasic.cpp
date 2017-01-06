@@ -17,9 +17,9 @@
 using namespace Eigen;
 using namespace std;
 
-// fix seed
-//std::default_random_engine generator(14837);
-// random seed
+//fix seed
+// std::default_random_engine generator(14837);
+//random seed
 std:: default_random_engine generator((unsigned int) time(nullptr));
 
 std:: uniform_real_distribution<double> distribution(0.0,1.0);
@@ -99,18 +99,18 @@ void revsort(double *a, int *ib, int n)  // a -> prob_array ib -> permu_array
      * sort ib[] alongside;
      * if initially, ib[] = 1...n, it will contain the permutation finally
      */
-    
+
     int l, j, ir, i;
     double ra;
     int ii;
-    
+
     if (n <= 1) return; // return if there is only one node.
-    
+
     a--; ib--; // to make index of the ith node "i". first element is 0.
-    
+
     l = (n >> 1) + 1; // l-1 is the last node which is not a leaf
     ir = n; // record the index to be set.
-    
+
     for (;;) {
 		if (l > 1) { // when the mother node is not the first node.
 			l = l - 1; // move forward
@@ -155,15 +155,15 @@ vector<T> ProbSampleNoReplace(const vector<T>& value, int nans, vector<double>& 
     int i, j, k, n1, n = value.size();
 	vector<int> perm;
 	vector<T> ans;
-    
+
     /* Record element identities */
     for (i = 0; i < n; i++)
 		perm.push_back(i);
-    
+
     /* Sort probabilities into descending order */
     /* Order element identities in parallel */
 	revsort(&prob[0], &perm[0], n);
-    
+
     /* Compute the sample */
     totalmass = 1;
     for (i = 0, n1 = n-1; i < nans; i++, n1--) {
@@ -182,7 +182,7 @@ vector<T> ProbSampleNoReplace(const vector<T>& value, int nans, vector<double>& 
 			perm[k] = perm[k + 1];
 		}
     }
-	
+
 	return ans;
 }
 
@@ -195,17 +195,17 @@ vector<T> SampleNoReplace(const vector<T>& value, int nans)
 {
 	int n = value.size();
 	vector<T> ans;
-    
+
 	if (nans < 2)
 	{
         //		ans.push_back(value[static_cast<int>(n * unif_rand())]);
         ans.push_back(value[static_cast<int>(n * distribution(generator))]);
 		return ans;
 	}
-	
+
 	int i, j;
 	vector<int> x;
-    
+
     for (i = 0; i < n; ++i)
 		x.push_back(i);
     for (i = 0; i < nans; ++i) {
@@ -271,11 +271,11 @@ gStruct GGen(const int& maxdeg, const int& node, const int& nedge)
 	vector<int> degree_dist = degreeG(maxdeg, node, nedge); // true DAG
 	vector<int> indegree(node, 0);	// indegree is matched to ts, to record in-degree for each node.
 	vector<bool> ind(node, true);  // to record wether the node has been assigned to an in-degree. true for not been assigned to.
-	
+
 	vector<int> candidate, pos, pa;
 	int i, j, np, ppa;
 	vector<int>::iterator iter;
-	
+
 	for (i = maxdeg; i >= 0; --i) // generate indegree for each node, start from the maximum in-degree, use: "indegree", "ind", "iter", "candidate", "pos".
 	{
 		if(degree_dist[i] > 0)
@@ -303,10 +303,10 @@ gStruct GGen(const int& maxdeg, const int& node, const int& nedge)
             {
                 candidate.pop_back();
             }
-            
+
 		}
 	}
-	
+
 	for (i = 0; i < node; ++i) // generate ordex： i is the index for ts.
 	{
 		np = indegree[i];
@@ -320,7 +320,7 @@ gStruct GGen(const int& maxdeg, const int& node, const int& nedge)
 				ans.ordex(j, ts[i] - 1) = pa[j];
 		}
 	}
-	
+
 	for (i = 0; i < node; ++i) // generate G
 	{
 		for (j = 0; j < maxdeg; ++j)
@@ -329,7 +329,7 @@ gStruct GGen(const int& maxdeg, const int& node, const int& nedge)
 			if (ppa)	ans.trueG(ppa - 1, i) = 1;
 		}
 	}
-    
+
 	return ans;
 }
 
@@ -343,15 +343,15 @@ gStruct MCGen(const int& node)
 	ans.trueG = MatrixXi::Zero(node, node);
 	vector<int> ts = SampleNoReplace(seq(1, node), node); // topological sort
 	ans.ts = ts;
-	
+
 	int ppa;
-	
+
 	for (int i = 0; i < node; ++i)
 	{
 		if(i == 0)	continue;
 		else ans.ordex(0,ts[i] - 1) = ts[i - 1];
 	}
-	
+
 	for (int i = 0; i < node; ++i)
 	{
 		for (int j = 0; j < 1; ++j)
@@ -360,185 +360,143 @@ gStruct MCGen(const int& node)
 			if (ppa)	ans.trueG(ppa - 1, i) = 1;
 		}
 	}
-    
+
 	return ans;
 }
 
-
-
-// generate data where each node only has two levels
-void DatGen(const MatrixXi& ordex, const vector<int>& ts, int noi, int nobs,
-            MatrixXi& data, VectorXVXi& obsIndex, MatrixXVXi& levelIndex, double coef)
+bool ifIntervene(int node, vector<int> subIvn)
 {
-	
-	int node = ordex.cols(), maxdeg = ordex.rows();
-	VectorXi nlevels = VectorXi::Constant(node, 2); // there are only two levels for each node.
-	vector<int> ivn = SampleNoReplace(seq(0, node - 1), noi); //
-	sort(ivn.begin(), ivn.begin() + noi);
-	
-	vector< vector<int> > levels; // node by 2 matrix, stores level Index for each node.
-	for (int it1 = 0; it1 < node; ++it1)
-    {
-		levels.push_back(seq(0, nlevels(it1) - 1));
-    }
-	
-	MatrixXi fX(nobs, noi);
-	for (int it1 = 0; it1 < noi; ++it1) // it1 -> j
-    {
-		for (int it2 = 0; it2 < nobs; ++it2) // it2 -> i
-        {
-			fX(it2, it1) = SampleNoReplace(levels[it1], 1)[0]; // sample a level for each intervened node.
-        }
-    }
-    
-	int dataSize = nobs * noi, Counter = -1, cur, pa;// counter -> i, cur -> j
-	double rowStat;
-	for (int it1 = 0; it1 < noi; ++it1)
-	{
-		int iNode = ivn[it1]; // iNode is
-		for (int itr = 0; itr < nobs; ++itr)
-		{
-			++Counter; // update i
-			for (int itc = 0; itc < node; ++itc)
-			{
-				cur = ts[itc] - 1; // update j
-				if (cur == iNode)
-					data(Counter, cur) = fX(itr, it1);
-				else if ((ordex.col(cur).array() == 0).all())
-					data(Counter, cur) = SampleNoReplace(levels[cur], 1)[0];
-				else
-				{
-					VectorXd logit = VectorXd::Zero(nlevels(cur));
-					for (int itp = 0; itp < maxdeg; ++itp)
-					{
-						pa = ordex(itp, cur);
-						if (pa != 0)
-						{
-							logit(0) += coef - coef * data(Counter, pa - 1);      // coef denotes the magnitude of influence
-							logit(1) += coef * data(Counter, pa - 1);
-						}
-					}
-					rowStat = logit.maxCoeff();
-					logit = logit.array() - rowStat;
-					logit = logit.array().exp();
-					rowStat = logit.sum();
-					logit /= rowStat;
-                    vector<double> temp = vector<double> (logit.data(), logit.data() + nlevels(cur)); // By Jean
-                    data(Counter, cur) = ProbSampleNoReplace(levels[cur], 1, temp)[0]; // By Jean
-//					data(Counter, cur) = ProbSampleNoReplace(levels[cur], 1, vector<double> (logit.data(), logit.data() + nlevels(cur)))[0];
-				}
-			}
-		}
-	}
-    
-    Counter = 0;
-    Map<VectorXi> ivnalias(&ivn[0], ivn.size());
-    for (int it = 0; it < node; ++it)
-    {
-        vector<int> vec1;
-        if (((ivnalias.array() - it) == 0).any())
-        {
-            ++Counter;
-            if (Counter == 1)
-            {
-                vec1 = seq(nobs, dataSize - 1);
-            }
-            else if (Counter == noi)
-            {
-                vec1 = seq(0, nobs * (Counter - 1) - 1);
-            }
-            else
-            {
-                vec1 = seq(0, nobs * (Counter - 1) - 1);
-                vector<int>	vec2 = seq(nobs * Counter, dataSize - 1);
-                vec1.insert(vec1.end(), vec2.begin(), vec2.end());
-            }
-        }
-        else
-        {
-            vec1 = seq(0, dataSize - 1);
-        }
-        obsIndex(it) = VectorXi::Map(&vec1[0], vec1.size());
-    }
-    
-    VectorXi dummy(nlevels.maxCoeff());
-    for (int it1 = 0; it1 < nlevels.maxCoeff(); ++it1)
-        dummy(it1) = it1;
-    for (int it1 = 0; it1 < node; ++it1)
-    {
-        for (int it2 = 0; it2 < node; ++it2)
-        {
-            if (it2 != it1)
-                levelIndex(it2, it1) = dummy.head(nlevels(it2) - 1);
-            else
-                levelIndex(it2, it1) = dummy.head(nlevels(it2));
-        }
-    }
-    
+  for (int i=0; i<subIvn.size(); i++) {
+    if (node==subIvn[i])
+      return true;
+  }
+  return false;
 }
 
-void DatGen_obs(const MatrixXi& ordex, const vector<int>& ts, int nobs,
-            MatrixXi& data, MatrixXVXi& levelIndex, double coef)
+// generate mixture of interventionl and observational data.
+// ordex, list of parent set
+// ts, topological sort
+// ivn, list of intervention
+// nlevels, number of levels for each node
+// data, data set that need to be generated
+// coef, magnitude of influence
+void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<int> > ivn, const VectorXi nlevels, MatrixXi& data, const double coef)
 {
-	
-	int node = ordex.cols(), maxdeg = ordex.rows();
-	VectorXi nlevels = VectorXi::Constant(node, 2); // there are only two levels for each node.
-	//vector<int> ivn = SampleNoReplace(seq(0, node - 1), noi); //
-	//sort(ivn.begin(), ivn.begin() + noi);
-	
-	vector< vector<int> > levels; // node by 2 matrix, stores level Index for each node.
-	for (int it1 = 0; it1 < node; ++it1)
-    {
-		levels.push_back(seq(0, nlevels(it1) - 1));
-    }
-    
-    int Counter = -1, cur, pa;
-    
-	double rowStat;
 
-    for (int itr = 0; itr < nobs; ++itr)
-    {
-        ++Counter; // update i
-        for (int itc = 0; itc < node; ++itc)
-        {
-            cur = ts[itc] - 1; // update j
-            if ((ordex.col(cur).array() == 0).all())
-                data(Counter, cur) = SampleNoReplace(levels[cur], 1)[0];
-            else
-            {
-                VectorXd logit = VectorXd::Zero(nlevels(cur));
-                for (int itp = 0; itp < maxdeg; ++itp)
-                {
-                    pa = ordex(itp, cur);
-                    if (pa != 0)
-                    {
-                        logit(0) += coef - coef * data(Counter, pa - 1);      // coef denotes the magnitude of influence
-                        logit(1) += coef * data(Counter, pa - 1);
-                    }
-                }
-                rowStat = logit.maxCoeff();
-                logit = logit.array() - rowStat;
-                logit = logit.array().exp();
-                rowStat = logit.sum();
-                logit /= rowStat;
-                vector<double> temp = vector<double> (logit.data(), logit.data() + nlevels(cur)); // By Jean
-                data(Counter, cur) = ProbSampleNoReplace(levels[cur], 1, temp)[0]; // By Jean
-                //					data(Counter, cur) = ProbSampleNoReplace(levels[cur], 1, vector<double> (logit.data(), logit.data() + nlevels(cur)))[0];
-            }
-        }
+  int node = ordex.cols(), maxdeg = ordex.rows();
+
+  vector< vector<int> > levels; // node by 2 matrix, stores level Index for each node.
+  for (int it1 = 0; it1 < node; ++it1)
+  {
+    levels.push_back(seq(0, nlevels(it1) - 1));
+  }
+
+  int dataSize = ivn.size(), Counter = -1, cur, pa;// counter -> i, cur -> j
+  vector< vector<int> > fX(dataSize);
+  for (int it1=0; it1 < dataSize; ++it1)
+  {
+    for (int it2=0; it2<ivn[it1].size(); ++it2) {
+      if (ivn[it1][it2] != -1)
+        fX[it1].push_back(SampleNoReplace(levels[ivn[it1][it2]], 1)[0]);
     }
-    VectorXi dummy(nlevels.maxCoeff());
-	for (int it1 = 0; it1 < nlevels.maxCoeff(); ++it1)
-		dummy(it1) = it1;
-	for (int it1 = 0; it1 < node; ++it1)
-	{
-		for (int it2 = 0; it2 < node; ++it2)
-		{
-			if (it2 != it1)
-				levelIndex(it2, it1) = dummy.head(nlevels(it2) - 1);
-			else
-				levelIndex(it2, it1) = dummy.head(nlevels(it2));
-		}
-	}
+  }
+
+  double rowStat;
+
+  for (int itr = 0; itr < dataSize; ++itr)
+  {
+    vector<int> iNode = ivn[itr];
+    for (int itc = 0; itc < node; ++itc) {
+      cur = ts[itc] - 1;
+      if (ifIntervene(cur, iNode))
+        data(itr, cur) = fX[itr][0];
+      else if ((ordex.col(cur).array() == 0).all())
+        data(itr, cur) = SampleNoReplace(levels[cur], 1)[0];
+      else
+      {
+        VectorXd logit = VectorXd::Zero(nlevels(cur));
+        for (int itp = 0; itp < maxdeg; ++itp)
+        {
+          pa = ordex(itp, cur);
+          if (pa!=0)
+          {
+            logit(data(itr, pa-1)) += coef;
+          }
+        }
+        rowStat = logit.maxCoeff();
+        logit = logit.array() - rowStat;
+        logit = logit.array().exp();
+        rowStat = logit.sum();
+        logit /= rowStat;
+        vector<double> temp = vector<double> (logit.data(), logit.data() + nlevels(cur)); // By Jean
+        data(itr, cur) = ProbSampleNoReplace(levels[cur], 1, temp)[0]; // By Jean
+      }
+    }
+  }
 }
 
+void DatGen_obs(const MatrixXi& ordex, const vector<int>& ts, int nobs, const VectorXi nlevels,
+                MatrixXi& data, MatrixXVXi& levelIndex, double coef)
+{
+
+  int node = ordex.cols(), maxdeg = ordex.rows();
+  //	VectorXi nlevels = VectorXi::Constant(node, 2); // there are only two levels for each node.
+  //vector<int> ivn = SampleNoReplace(seq(0, node - 1), noi); //
+  //sort(ivn.begin(), ivn.begin() + noi);
+
+  vector< vector<int> > levels; // node by 2 matrix, stores level Index for each node.
+  for (int it1 = 0; it1 < node; ++it1)
+  {
+    levels.push_back(seq(0, nlevels(it1) - 1));
+  }
+
+  int dataSize = nobs, Counter = -1, cur, pa;
+
+  double rowStat;
+
+  for (int itr = 0; itr < nobs; ++itr)
+  {
+    ++Counter; // update i
+    for (int itc = 0; itc < node; ++itc)
+    {
+      cur = ts[itc] - 1; // update j
+      if ((ordex.col(cur).array() == 0).all())
+        data(Counter, cur) = SampleNoReplace(levels[cur], 1)[0];
+      else
+      {
+        VectorXd logit = VectorXd::Zero(nlevels(cur));
+        for (int itp = 0; itp < maxdeg; ++itp)
+        {
+          pa = ordex(itp, cur);
+          if (pa != 0)
+          {
+            //                        logit(0) += coef - coef * data(Counter, pa - 1);      // coef denotes the magnitude of influence
+            //                        logit(1) += coef * data(Counter, pa - 1);
+            logit(data(Counter, pa-1)) += coef;
+          }
+        }
+        rowStat = logit.maxCoeff();
+        logit = logit.array() - rowStat;
+        logit = logit.array().exp();
+        rowStat = logit.sum();
+        logit /= rowStat;
+        vector<double> temp = vector<double> (logit.data(), logit.data() + nlevels(cur)); // By Jean
+        data(Counter, cur) = ProbSampleNoReplace(levels[cur], 1, temp)[0]; // By Jean
+        //					data(Counter, cur) = ProbSampleNoReplace(levels[cur], 1, vector<double> (logit.data(), logit.data() + nlevels(cur)))[0];
+      }
+    }
+  }
+  VectorXi dummy(nlevels.maxCoeff());
+  for (int it1 = 0; it1 < nlevels.maxCoeff(); ++it1)
+    dummy(it1) = it1;
+  for (int it1 = 0; it1 < node; ++it1)
+  {
+    for (int it2 = 0; it2 < node; ++it2)
+    {
+      if (it2 != it1)
+        levelIndex(it2, it1) = dummy.head(nlevels(it2) - 1);
+      else
+        levelIndex(it2, it1) = dummy.head(nlevels(it2));
+    }
+  }
+}

@@ -12,7 +12,7 @@ LazyData: TRUE
 Depends:
     R (>= 3.2.3)
 Imports:
-    Rcpp, sparsebnUtils
+    Rcpp, sparsebnUtils, RBGL, graph
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 5.0.1
 Suggests: testthat,

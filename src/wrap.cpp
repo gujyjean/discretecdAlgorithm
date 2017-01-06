@@ -28,7 +28,7 @@ typedef Map<VectorXi> MapVeci;
 
 
 // [[Rcpp::export]]
-List CD( int node,
+List CD(            int node,
                     int dataSize,
                     Eigen::Map<Eigen::MatrixXi> data,
                     Eigen::Map<Eigen::VectorXi> nlevels,
@@ -202,4 +202,50 @@ double lambdaMax( int node,
   // should return lambdaSeq, time.
   // return estimateG;
   return lambda;
+}
+
+// [[Rcpp::export]]
+IntegerMatrix DatGen(int maxdeg,
+                     int node,
+                     Eigen::Map<Eigen::MatrixXi> ordex,
+                     IntegerVector ts,
+                     int dataSize,
+                     List ivn,
+                     Eigen::Map<Eigen::VectorXi> nlevels,
+                     double coef)
+{
+  Eigen::MatrixXi t_ordex(maxdeg, node);
+  for (int i=0; i<maxdeg; i++) {
+    for (int j=0; j<node; j++) {
+      t_ordex(i, j) = ordex(i, j);
+    }
+  }
+
+  std::vector<int> t_ts(node);
+  for (int i=0; i<node; i++) {
+    t_ts[i] = ts[i];
+  }
+
+  VectorXVXi temp_ivn(dataSize);
+  for (int i=0; i<dataSize; i++) {
+    temp_ivn(i) = ivn[i];
+  }
+  std::vector< std::vector<int> > t_ivn(dataSize);
+  for (int i=0; i<dataSize; i++) {
+    for (int j=0; j<temp_ivn(i).size(); j++) {
+      t_ivn[i].push_back(temp_ivn(i)(j));
+    }
+  }
+
+  Eigen::VectorXi t_nlevels(node);
+  for (int i=0; i<node; i++) {
+    t_nlevels(i) = nlevels(i);
+  }
+
+  Eigen::MatrixXi data = Eigen::MatrixXi::Zero(dataSize, node);
+
+  // run data generating function
+  DatGen(t_ordex, t_ts, t_ivn, t_nlevels, data, coef);
+
+  return wrap(data);
 }

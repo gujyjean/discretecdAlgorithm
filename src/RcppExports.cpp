@@ -50,3 +50,21 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// DatGen
+IntegerMatrix DatGen(int maxdeg, int node, Eigen::Map<Eigen::MatrixXi> ordex, IntegerVector ts, int dataSize, List ivn, Eigen::Map<Eigen::VectorXi> nlevels, double coef);
+RcppExport SEXP discretecdAlgorithm_DatGen(SEXP maxdegSEXP, SEXP nodeSEXP, SEXP ordexSEXP, SEXP tsSEXP, SEXP dataSizeSEXP, SEXP ivnSEXP, SEXP nlevelsSEXP, SEXP coefSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type maxdeg(maxdegSEXP);
+    Rcpp::traits::input_parameter< int >::type node(nodeSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXi> >::type ordex(ordexSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ts(tsSEXP);
+    Rcpp::traits::input_parameter< int >::type dataSize(dataSizeSEXP);
+    Rcpp::traits::input_parameter< List >::type ivn(ivnSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXi> >::type nlevels(nlevelsSEXP);
+    Rcpp::traits::input_parameter< double >::type coef(coefSEXP);
+    __result = Rcpp::wrap(DatGen(maxdeg, node, ordex, ts, dataSize, ivn, nlevels, coef));
+    return __result;
+END_RCPP
+}
