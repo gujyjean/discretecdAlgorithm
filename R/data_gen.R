@@ -31,6 +31,17 @@ datGen_call <- function(edge_list,
   # check input
   if(!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be a edgeList object!")
 
+  ts = NULL
+  if (!requireNamespace("RBGL", quietly = TRUE)) {
+    stop("RBGL package (from BioConductor) required to find the topological sort", call. = FALSE)
+  }
+  else
+  {
+    dag_graphNEL <- sparsebnUtils::to_graphNEL(edge_list)
+    ts <- as.integer((RBGL::tsort(dag_graphNEL)))
+  }
+  if (is.null(ts)) stop("Need topological sort for the graph!")
+
   edge_list <- as.list(edge_list)
   edge_list <- lapply(edge_list, as.integer)
 
@@ -43,11 +54,6 @@ datGen_call <- function(edge_list,
   ordex <- sapply(edge_list, function(x, maxdeg){
     as.integer(c(x, rep(0, maxdeg-length(x))))
   }, maxdeg)
-
-  V <- as.character(1:node)
-  names(edge_list) <- V
-  dag_graphNEL <- graph::graphNEL(node = V, edgeL = edge_list, edgemode = "directed")
-  ts <- as.integer(rev(RBGL::tsort(dag_graphNEL)))
 
   if(!is.numeric(dataSize) || length(dataSize) > 1) stop("data_size must be a scaler!")
   if(dataSize < 1) stop("data_size must be a positive integer!")

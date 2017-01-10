@@ -14,7 +14,7 @@ Depends:
 Imports:
     Rcpp, sparsebnUtils
 Suggests:
-    RBGL, graph
+    RBGL, testthat
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 5.0.1
 Suggests: testthat,

@@ -10,9 +10,10 @@
 
 #' @useDynLib discretecdAlgorithm
 #' @importFrom Rcpp sourceCpp
+# @importFrom RBGL tsort
 NULL
 
-# ========================================================
+#========================================================
 # The main function CD.run
 # ========================================================
 ## will be exported
