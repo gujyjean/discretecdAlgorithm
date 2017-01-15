@@ -217,7 +217,7 @@ coef_gen <- function(edge_list, n_levels, FUN=NULL, flip=TRUE) {
   coef <- lapply(1:length(edge_list), function(x, edge_list, flip){
     if (is.null(FUN)) {
       FUN <- function(n) {
-        runif(n, 1, 3)
+        stats::runif(n, 1, 3)
       }
     }
     if (length(edge_list[[x]])==0) {
