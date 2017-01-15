@@ -4,8 +4,8 @@
 \alias{data_gen}
 \title{data_gen}
 \usage{
-data_gen(edge_list, data_size, ivn = NULL, n_levels = NULL,
-  magnitude = NULL)
+data_gen(edge_list, data_size, ivn = NULL, n_levels = NULL, coef = NULL,
+  FUN = NULL, flip = TRUE)
 }
 \arguments{
 \item{edge_list}{a \code{\link[sparsebnUtils]{edgeList}} object.}
@@ -14,9 +14,13 @@ data_gen(edge_list, data_size, ivn = NULL, n_levels = NULL,
 
 \item{ivn, }{a list of intervention for each data point.}
 
-\item{n_levels, }{a list of number of levels for each node.}
+\item{n_levels, }{a list of number of levels for each node, default is binary data set.}
 
-\item{magnitude, }{a function to generate magnitude of influence}
+\item{coef, }{coefficient list (optional).}
+
+\item{FUN, }{a function to generate magnitude of influence (optional).}
+
+\item{flip, }{a bool parameter. If true, when generating coefficients, will randomly flip the sign of coefficients.}
 }
 \value{
 data matrix

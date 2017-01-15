@@ -379,8 +379,8 @@ bool ifIntervene(int node, vector<int> subIvn)
 // ivn, list of intervention
 // nlevels, number of levels for each node
 // data, data set that need to be generated
-// coef, magnitude of influence
-void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<int> > ivn, const VectorXi nlevels, MatrixXi& data, const double coef)
+// coef,
+void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<int> >& ivn, const VectorXi& nlevels, MatrixXi& data, const vector<VectorXMXd>& coef)
 {
 
   int node = ordex.cols(), maxdeg = ordex.rows();
@@ -391,7 +391,7 @@ void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<i
     levels.push_back(seq(0, nlevels(it1) - 1));
   }
 
-  int dataSize = ivn.size(), Counter = -1, cur, pa;// counter -> i, cur -> j
+  int dataSize = ivn.size(), cur, pa;// counter -> i, cur -> j
   vector< vector<int> > fX(dataSize);
   for (int it1=0; it1 < dataSize; ++it1)
   {
@@ -420,7 +420,12 @@ void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<i
           pa = ordex(itp, cur);
           if (pa!=0)
           {
-            logit(data(itr, pa-1)) += coef;
+            for (int l=0; l<(nlevels[cur]); l++) {
+              if (data(itr, pa-1)) {
+                logit(l) += coef[cur](itp+1)(l, (data(itr, pa-1)-1)); // for coefficient matrix, row is parent, col is child
+              }
+              logit(l) += coef[cur](0)(l, 0); // intercept
+            }
           }
         }
         rowStat = logit.maxCoeff();

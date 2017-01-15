@@ -211,8 +211,9 @@ IntegerMatrix DatGen(int maxdeg,
                      IntegerVector ts,
                      int dataSize,
                      List ivn,
+                     IntegerVector coef_length,
                      Eigen::Map<Eigen::VectorXi> nlevels,
-                     double coef)
+                     List coef)
 {
   Eigen::MatrixXi t_ordex(maxdeg, node);
   for (int i=0; i<maxdeg; i++) {
@@ -244,8 +245,55 @@ IntegerMatrix DatGen(int maxdeg,
 
   Eigen::MatrixXi data = Eigen::MatrixXi::Zero(dataSize, node);
 
+  std::vector<VectorXMXd> t_coef(node);
+  for (int i=0; i<node; i++) {
+    List single_nodeList = coef[i];
+    if (coef_length[i]) {
+      t_coef[i].resize(coef_length[i]);
+      for (int l_index=0; l_index < coef_length[i]; l_index++) {
+        t_coef[i](l_index) = single_nodeList[l_index];
+      }
+    }
+  }
+
+  // test for input
+
+  // Rcout << "ordex is: \n";
+  // Rcout << t_ordex << std::endl;
+  // Rcout << std::endl;
+  //
+  // Rcout << "ts is: \n";
+  // Rcout << t_ts[0] << " " << t_ts[1] << " " << t_ts[2] << " " << t_ts[3] <<" " << t_ts[4] << std::endl;
+  // Rcout << std::endl;
+  //
+  // Rcout << "ivn is: \n";
+  // for (int i=0; i<ivn.size(); i++) {
+  //   for (int j=0; j<1; j++) {
+  //     Rcout << t_ivn[i][j] << " ";
+  //   }
+  //   Rcout << std::endl;
+  // }
+  // Rcout << std::endl;
+  //
+  // Rcout << "nlevel is: \n";
+  // Rcout << t_nlevels << std::endl;
+  // Rcout << std::endl;
+  //
+  // Rcout << "data is: \n";
+  // Rcout << data << std::endl;
+  // Rcout << std::endl;
+  //
+  // Rcout << "coef is : \n";
+  // for (int i=0; i<node; i++) {
+  //   for (int j=0; j<(coef_length[i]); j++) {
+  //     Rcpp::Rcout << t_coef[i](j) << std::endl;
+  //   }
+  //   Rprintf("\n");
+  // }
+
+
   // run data generating function
-  DatGen(t_ordex, t_ts, t_ivn, t_nlevels, data, coef);
+  DatGen(t_ordex, t_ts, t_ivn, t_nlevels, data, t_coef);
 
   return wrap(data);
 }
