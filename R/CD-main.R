@@ -10,7 +10,6 @@
 
 #' @useDynLib discretecdAlgorithm
 #' @importFrom Rcpp sourceCpp
-# @importFrom RBGL tsort
 NULL
 
 #========================================================

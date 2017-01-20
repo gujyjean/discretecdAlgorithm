@@ -40,14 +40,10 @@ datGen_call <- function(edge_list,
   if(!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be a edgeList object!")
 
   ts = NULL
-  if (!requireNamespace("RBGL", quietly = TRUE)) {
-    stop("RBGL package (from BioConductor) required to find the topological sort", call. = FALSE)
-  }
-  else
-  {
-    dag_graphNEL <- sparsebnUtils::to_graphNEL(edge_list)
-    ts <- as.integer((RBGL::tsort(dag_graphNEL)))
-  }
+
+  dag_igraph <- sparsebnUtils::to_igraph(edge_list)
+  ts <- as.integer(names(igraph::topo_sort(dag_igraph)))
+
   if (is.null(ts)) stop("Need topological sort for the graph!")
 
   edge_list <- as.list(edge_list)
