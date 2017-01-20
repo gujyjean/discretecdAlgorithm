@@ -3,38 +3,30 @@
 #' data generating function
 #'
 #' @param edge_list a \code{\link[sparsebnUtils]{edgeList}} object.
-#' @param data_size size of the data set, a scaler
+#' @param n size of the data set, a scaler
 #' @param ivn, a list of intervention for each data point.
 #' @param n_levels, a list of number of levels for each node, default is binary data set.
 #' @param coef, coefficient list (optional).
-#' @param FUN, a function to generate magnitude of influence (optional).
-#' @param flip, a bool parameter. If true, when generating coefficients, will randomly flip the sign of coefficients.
 #' @return data matrix
 #' @export
 data_gen <- function(edge_list,
-                     data_size,
+                     n,
                      ivn = NULL,
                      n_levels = NULL,
-                     coef = NULL,
-                     FUN = NULL,
-                     flip = TRUE)
+                     coef = NULL)
 {
   datGen_call(edge_list = edge_list,
-              dataSize = data_size,
+              dataSize = n,
               ivn = ivn,
               nlevels = n_levels,
-              coef = coef,
-              FUN = FUN,
-              flip = flip)
+              coef = coef)
 }
 
 datGen_call <- function(edge_list,
                         dataSize,
                         ivn,
                         nlevels,
-                        coef,
-                        FUN,
-                        flip)
+                        coef)
 {
   # check input
   if(!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be a edgeList object!")
@@ -78,9 +70,7 @@ datGen_call <- function(edge_list,
   if(length(nlevels)!=node) stop("length of n_levels not compatible with edge_list!")
   nlevels <- as.integer(nlevels)
 
-  if(is.null(coef)) {
-    coef <- coef_gen(edge_list, nlevels, FUN, flip)
-  }
+  if(is.null(coef)) stop("coef must have some value!")
   if(!is.list(coef)) stop("coef must be a list!")
   # check type of list element
   if (sum(sapply(coef, function(x){!is.matrix(x) && !is.null(x)}))) stop("element of coeff must be matrix!")
@@ -117,7 +107,7 @@ datGen_call <- function(edge_list,
   coef_length <- sapply(coef_list, length)
   coef_length <- as.integer(coef_length)
 
-  # call DatGen
+  # call DatGen_cpp
   DatGen_cpp(maxdeg, node, ordex, ts, dataSize, ivn, nlevels, coef_list, coef_length)
 }
 
@@ -235,4 +225,34 @@ coef_gen <- function(edge_list, n_levels, FUN=NULL, flip=TRUE) {
     return(coef_matrix)
   }, edge_list, flip)
   return(coef)
+}
+
+#' generate_discrete_data
+#'
+#' A function that generate discrete data set.
+#'
+#' @param edge_list a \code{\link[sparsebnUtils]{edgeList}} object.
+#' @param n size of the data set, a scaler
+#' @param ivn, a list of intervention for each data point.
+#' @param n_levels, a list of number of levels for each node, default is binary data set.
+#' @param coef, coefficient list (optional).
+#' @param FUN, a function to generate magnitude of influence (optional).
+#' @param flip, a bool parameter. If true, when generating coefficients, will randomly flip the sign of coefficients.
+#' @return data matrix
+#' @export
+generate_discrete_data <- function(edge_list,
+                                   n,
+                                   ivn = NULL,
+                                   n_levels = NULL,
+                                   coef = NULL,
+                                   FUN = NULL,
+                                   flip = TRUE)
+{
+  # check coef
+  if(is.null(coef)) {
+    coef <- coef_gen(edge_list, n_levels, FUN, flip)
+  }
+
+  # call data_gen
+  data_gen(edge_list = edge_list, n = n, ivn = ivn, n_levels = n_levels, coef = coef)
 }

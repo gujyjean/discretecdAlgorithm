@@ -3,6 +3,7 @@
 export(cd.run)
 export(coef_gen)
 export(data_gen)
+export(generate_discrete_data)
 export(max_lambda)
 importFrom(Rcpp,sourceCpp)
 useDynLib(discretecdAlgorithm)
