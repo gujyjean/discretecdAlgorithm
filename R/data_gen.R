@@ -50,6 +50,7 @@ datGen_call <- function(edge_list,
   ordex <- sapply(edge_list, function(x, maxdeg){
     as.integer(c(x, rep(0, maxdeg-length(x))))
   }, maxdeg)
+  ordex <- matrix(ordex, nrow = maxdeg)
 
   if(!is.numeric(dataSize) || length(dataSize) > 1) stop("data_size must be a scaler!")
   if(dataSize < 1) stop("data_size must be a positive integer!")
