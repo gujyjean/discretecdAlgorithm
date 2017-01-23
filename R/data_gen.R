@@ -201,12 +201,12 @@ DatGen_cpp <- function(maxdeg,
 #' @return A list of coefficient matrix
 #' @export
 coef_gen <- function(edge_list, n_levels, FUN=NULL, flip=TRUE) {
-  coef <- lapply(1:length(edge_list), function(x, edge_list, flip){
-    if (is.null(FUN)) {
-      FUN <- function(n) {
-        stats::runif(n, 1, 3)
-      }
+  if (is.null(FUN)) {
+    FUN <- function(n) {
+      stats::runif(n, 1, 3)
     }
+  }
+  coef <- lapply(1:length(edge_list), function(x, edge_list, flip){
     if (length(edge_list[[x]])==0) {
       coef_matrix <- NULL;
     }
@@ -249,6 +249,11 @@ generate_discrete_data <- function(edge_list,
                                    FUN = NULL,
                                    flip = TRUE)
 {
+  # check n_levels
+  if(is.null(n_levels)) {
+    n_levels <- rep(2, length(edge_list))
+  }
+
   # check coef
   if(is.null(coef)) {
     coef <- coef_gen(edge_list, n_levels, FUN, flip)
