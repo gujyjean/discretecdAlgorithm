@@ -1,25 +1,25 @@
-#' data_gen
+#' generate_discrete_data
 #'
 #' data generating function
 #'
-#' @param edge_list a \code{\link[sparsebnUtils]{edgeList}} object.
+#' @param graph a \code{\link[sparsebnUtils]{edgeList}} object.
+#' @param params, coefficient list.
 #' @param n size of the data set, a scaler
 #' @param ivn, a list of intervention for each data point.
 #' @param n_levels, a list of number of levels for each node, default is binary data set.
-#' @param coef, coefficient list (optional).
 #' @return data matrix
 #' @export
-data_gen <- function(edge_list,
-                     n,
-                     ivn = NULL,
-                     n_levels = NULL,
-                     coef = NULL)
+generate_discrete_data <- function(graph,
+                                   params = NULL,
+                                   n,
+                                   ivn = NULL,
+                                   n_levels = NULL)
 {
-  datGen_call(edge_list = edge_list,
+  datGen_call(edge_list = graph,
               dataSize = n,
               ivn = ivn,
               nlevels = n_levels,
-              coef = coef)
+              coef = params)
 }
 
 datGen_call <- function(edge_list,
@@ -230,37 +230,37 @@ coef_gen <- function(edge_list, n_levels, FUN=NULL, flip=TRUE) {
   return(coef)
 }
 
-#' generate_discrete_data
+#' data_gen
 #'
 #' A function that generate discrete data set.
 #'
-#' @param edge_list a \code{\link[sparsebnUtils]{edgeList}} object.
+#' @param graph a \code{\link[sparsebnUtils]{edgeList}} object.
 #' @param n size of the data set, a scaler
 #' @param ivn, a list of intervention for each data point.
 #' @param n_levels, a list of number of levels for each node, default is binary data set.
-#' @param coef, coefficient list (optional).
+#' @param params, coefficient list (optional).
 #' @param FUN, a function to generate magnitude of influence (optional).
 #' @param flip, a bool parameter. If true, when generating coefficients, will randomly flip the sign of coefficients.
 #' @return data matrix
 #' @export
-generate_discrete_data <- function(edge_list,
-                                   n,
-                                   ivn = NULL,
-                                   n_levels = NULL,
-                                   coef = NULL,
-                                   FUN = NULL,
-                                   flip = TRUE)
+data_gen <- function(graph,
+                     n,
+                     ivn = NULL,
+                     n_levels = NULL,
+                     params = NULL,
+                     FUN = NULL,
+                     flip = TRUE)
 {
   # check n_levels
   if(is.null(n_levels)) {
-    n_levels <- rep(2, length(edge_list))
+    n_levels <- rep(2, length(graph))
   }
 
   # check coef
-  if(is.null(coef)) {
-    coef <- coef_gen(edge_list, n_levels, FUN, flip)
+  if(is.null(params)) {
+    params <- coef_gen(graph, n_levels, FUN, flip)
   }
 
   # call data_gen
-  data_gen(edge_list = edge_list, n = n, ivn = ivn, n_levels = n_levels, coef = coef)
+  data_gen(graph = graph, params = params, n = n, ivn = ivn, n_levels = n_levels)
 }
