@@ -31,12 +31,7 @@ datGen_call <- function(edge_list,
   # check input
   if(!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be a edgeList object!")
 
-  ts = NULL
-
   dag_igraph <- sparsebnUtils::to_igraph(edge_list)
-  ts <- as.integer(names(igraph::topo_sort(dag_igraph)))
-
-  if (is.null(ts)) stop("Need topological sort for the graph!")
 
   edge_list <- as.list(edge_list)
   edge_list <- lapply(edge_list, as.integer)
@@ -46,6 +41,12 @@ datGen_call <- function(edge_list,
 
   node <- length(edge_list)
   node<- as.integer(node)
+
+  ts = NULL
+  ts <- as.integer(names(igraph::topo_sort(dag_igraph)))
+
+  if (is.null(ts)) stop("Need topological sort for the graph!")
+  if (length(ts) != node) stop("length of ts should be the same with node!")
 
   ordex <- sapply(edge_list, function(x, maxdeg){
     as.integer(c(x, rep(0, maxdeg-length(x))))
