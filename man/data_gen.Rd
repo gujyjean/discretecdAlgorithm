@@ -4,10 +4,11 @@
 \alias{data_gen}
 \title{data_gen}
 \usage{
-data_gen(edge_list, n, ivn = NULL, n_levels = NULL, coef = NULL)
+data_gen(graph, n, ivn = NULL, n_levels = NULL, params = NULL,
+  FUN = NULL, flip = TRUE)
 }
 \arguments{
-\item{edge_list}{a \code{\link[sparsebnUtils]{edgeList}} object.}
+\item{graph}{a \code{\link[sparsebnUtils]{edgeList}} object.}
 
 \item{n}{size of the data set, a scaler}
 
@@ -15,12 +16,16 @@ data_gen(edge_list, n, ivn = NULL, n_levels = NULL, coef = NULL)
 
 \item{n_levels, }{a list of number of levels for each node, default is binary data set.}
 
-\item{coef, }{coefficient list (optional).}
+\item{params, }{coefficient list (optional).}
+
+\item{FUN, }{a function to generate magnitude of influence (optional).}
+
+\item{flip, }{a bool parameter. If true, when generating coefficients, will randomly flip the sign of coefficients.}
 }
 \value{
 data matrix
 }
 \description{
-data generating function
+A function that generate discrete data set.
 }
 

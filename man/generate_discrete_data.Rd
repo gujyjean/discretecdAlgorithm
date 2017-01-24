@@ -4,28 +4,24 @@
 \alias{generate_discrete_data}
 \title{generate_discrete_data}
 \usage{
-generate_discrete_data(edge_list, n, ivn = NULL, n_levels = NULL,
-  coef = NULL, FUN = NULL, flip = TRUE)
+generate_discrete_data(graph, params = NULL, n, ivn = NULL,
+  n_levels = NULL)
 }
 \arguments{
-\item{edge_list}{a \code{\link[sparsebnUtils]{edgeList}} object.}
+\item{graph}{a \code{\link[sparsebnUtils]{edgeList}} object.}
+
+\item{params, }{coefficient list.}
 
 \item{n}{size of the data set, a scaler}
 
 \item{ivn, }{a list of intervention for each data point.}
 
 \item{n_levels, }{a list of number of levels for each node, default is binary data set.}
-
-\item{coef, }{coefficient list (optional).}
-
-\item{FUN, }{a function to generate magnitude of influence (optional).}
-
-\item{flip, }{a bool parameter. If true, when generating coefficients, will randomly flip the sign of coefficients.}
 }
 \value{
 data matrix
 }
 \description{
-A function that generate discrete data set.
+data generating function
 }
 
