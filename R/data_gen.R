@@ -262,5 +262,5 @@ data_gen <- function(graph,
   }
 
   # call data_gen
-  data_gen(graph = graph, params = params, n = n, ivn = ivn, n_levels = n_levels)
+  generate_discrete_data(graph = graph, params = params, n = n, ivn = ivn, n_levels = n_levels)
 }
