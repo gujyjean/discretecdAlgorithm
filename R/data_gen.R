@@ -63,7 +63,11 @@ datGen_call <- function(edge_list,
   }
   if(!is.list(ivn)) stop("ivn must be a list!")
   if(length(ivn)!=dataSize) stop("length of ivn not compatible with data_size")
-  ivn <- lapply(ivn, function(x){as.integer(x-1)})
+  ivn <- lapply(ivn, function(x){
+    if (is.null(x)) {
+      x <- 0
+    }
+    as.integer(x-1)})
 
   if (is.null(nlevels)) {
     nlevels <- rep(2, node)

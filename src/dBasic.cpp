@@ -20,9 +20,10 @@ using namespace std;
 //fix seed
 // std::default_random_engine generator(14837);
 //random seed
-std:: default_random_engine generator((unsigned int) time(nullptr));
+// std:: default_random_engine generator((unsigned int) time(nullptr));
 
-std:: uniform_real_distribution<double> distribution(0.0,1.0);
+// std::default_random_engine generator;
+// std:: uniform_real_distribution<double> distribution(0.0,1.0);
 
 // Check whether adding a directed edge from node a to node b induces cycles in G.
 
@@ -167,8 +168,8 @@ vector<T> ProbSampleNoReplace(const vector<T>& value, int nans, vector<double>& 
     /* Compute the sample */
     totalmass = 1;
     for (i = 0, n1 = n-1; i < nans; i++, n1--) {
-        //		rT = totalmass * unif_rand(); // unif_rand is from r.h
-        rT = totalmass * distribution(generator);
+        	rT = totalmass * unif_rand(); // unif_rand is from r.h
+        // rT = totalmass * distribution(generator);
 		mass = 0;
 		for (j = 0; j < n1; j++) {
 			mass += prob[j];
@@ -198,8 +199,8 @@ vector<T> SampleNoReplace(const vector<T>& value, int nans)
 
 	if (nans < 2)
 	{
-        //		ans.push_back(value[static_cast<int>(n * unif_rand())]);
-        ans.push_back(value[static_cast<int>(n * distribution(generator))]);
+        	ans.push_back(value[static_cast<int>(n * unif_rand())]);
+        // ans.push_back(value[static_cast<int>(n * distribution(generator))]);
 		return ans;
 	}
 
@@ -209,8 +210,8 @@ vector<T> SampleNoReplace(const vector<T>& value, int nans)
     for (i = 0; i < n; ++i)
 		x.push_back(i);
     for (i = 0; i < nans; ++i) {
-        //		j = static_cast<int>(n * unif_rand());
-        j = static_cast<int>(n * distribution(generator));
+        	j = static_cast<int>(n * unif_rand());
+        // j = static_cast<int>(n * distribution(generator));
 		ans.push_back(value[x[j]]);
 		x[j] = x[--n];
     }
