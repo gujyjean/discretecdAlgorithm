@@ -175,6 +175,9 @@ CD_call <- function(indata,
   data_matrix <- data$data
   data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
+  if (is.null(data_ivn)) {
+    data_ivn <- as.list(rep(0L, nrow(data_matrix)))
+  }
   if (length(data_ivn)!= nrow(data_matrix)) stop("length of ivn should be equals to number of observations!")
   data_level <- data$levels
   data_names <- names(data$data)
