@@ -48,6 +48,7 @@ NULL
 #'        A -1 value indicates that there is no truncation.
 #' @param alpha Threshold parameter used to terminate the algorithm whenever the number of edges in the
 #'              current DAG estimate is \code{> alpha * ncol(data)}.
+#' @param permute A bool parameter, default value is FALSE. If TRUE, will randomize order of going through blocks.
 #' @param adaptive A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
 #'        If TRUE, an adaptive lasso algorithm will be run.
 #' @return A \code{\link[sparsebnUtils]{sparsebnPath}} object.
@@ -96,6 +97,7 @@ cd.run <- function(indata,
                    weight.scale=1.0,
                    upperbound = 100.0,
                    alpha = 3,
+                   permute = FALSE,
                    adaptive = FALSE) {
 
   cd_adaptive_run(indata = indata,
@@ -110,6 +112,7 @@ cd.run <- function(indata,
                   gamma = weight.scale,
                   upperbound = upperbound,
                   threshold = alpha,
+                  permute = permute,
                   adaptive = adaptive)
 
 }
@@ -126,13 +129,14 @@ cd_adaptive_run <- function(indata,
                             gamma,
                             upperbound,
                             threshold,
+                            permute,
                             adaptive)
 {
   if (adaptive == FALSE) {
-    return(CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound,threshold)$fit)
+    return(CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound,threshold)$fit)
   }
   else {
-    cd_call_out <- CD_call(indata, eor, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)
+    cd_call_out <- CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)
     adaptive_weights <- cd_call_out$adaptive_weights
     return(CD_call(indata, eor, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
   }
@@ -141,6 +145,7 @@ cd_adaptive_run <- function(indata,
 # Convert input to the right form.
 CD_call <- function(indata,
                     eor,
+                    permute,
                     weights,
                     lambda_seq,
                     fmlam,
@@ -219,7 +224,10 @@ CD_call <- function(indata,
     }
   }
 
-  # eor <- eor[sample(1:eor_nr), ] # run with random order of blocks
+  if (permute) {
+    eor <- eor[sample(1:eor_nr), ] # run with random order of blocks
+  }
+
   eor_nr <- as.integer(eor_nr)
   eor <- matrix(as.integer(eor), ncol = 2)
 
