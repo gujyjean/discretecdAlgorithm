@@ -219,7 +219,7 @@ CD_call <- function(indata,
     }
   }
 
-  eor <- eor[sample(1:eor_nr), ] # run with random order of blocks
+  # eor <- eor[sample(1:eor_nr), ] # run with random order of blocks
   eor_nr <- as.integer(eor_nr)
   eor <- matrix(as.integer(eor), ncol = 2)
 

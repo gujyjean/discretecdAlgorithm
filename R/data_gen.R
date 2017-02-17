@@ -31,6 +31,7 @@ datGen_call <- function(edge_list,
   # check input
   if(!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be a edgeList object!")
 
+  node_name <- names(edge_list)
   dag_igraph <- sparsebnUtils::to_igraph(edge_list)
 
   edge_list <- as.list(edge_list)
@@ -60,6 +61,9 @@ datGen_call <- function(edge_list,
 
   if (is.null(ivn)) {
     ivn <- as.list(rep(0, dataSize))
+  }
+  else {
+    ivn <- lapply(ivn, function(x) match(x, node_name))
   }
   if(!is.list(ivn)) stop("ivn must be a list!")
   if(length(ivn)!=dataSize) stop("length of ivn not compatible with data_size")
