@@ -35,4 +35,3 @@ dat <- sparsebnUtils::sparsebnData(dat, type = "discrete")
 max_lambda(indata = dat)
 }
 }
-

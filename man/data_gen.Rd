@@ -28,4 +28,3 @@ data matrix
 \description{
 A function that generate discrete data set.
 }
-

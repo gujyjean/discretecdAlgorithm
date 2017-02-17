@@ -24,4 +24,3 @@ data matrix
 \description{
 data generating function
 }
-

@@ -21,4 +21,3 @@ A list of coefficient matrix
 \description{
 coefficient generating function
 }
-
