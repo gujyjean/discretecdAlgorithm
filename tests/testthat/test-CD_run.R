@@ -67,7 +67,7 @@ test_that("Testing default behaviour of cd.run", {
 
 test_that("Testing cd.run with manual settings", {
   weights <- matrix(1.5, nrow=node, ncol=node)
-  final <- cd.run(databn_obs, weights=weights, lambdas=NULL, lambdas.length=10, error.tol=0.0003, convLb=0.02, weight.scale=1.5, upperbound=300.0, alpha = 5, adaptive = TRUE)
+  final <- cd.run(databn_obs, weights=weights, lambdas=NULL, lambdas.length=10, error.tol=0.0003, convLb=0.02, weight.scale=1.5, upperbound=300.0, alpha = 5, permute = TRUE, adaptive = TRUE)
 
   ### check output type
   expect_is(final, "list")

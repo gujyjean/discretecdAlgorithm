@@ -133,12 +133,12 @@ cd_adaptive_run <- function(indata,
                             adaptive)
 {
   if (adaptive == FALSE) {
-    return(CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound,threshold)$fit)
+    return(CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
   }
   else {
     cd_call_out <- CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)
     adaptive_weights <- cd_call_out$adaptive_weights
-    return(CD_call(indata, eor, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
+    return(CD_call(indata, eor, permute, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
   }
 }
 
