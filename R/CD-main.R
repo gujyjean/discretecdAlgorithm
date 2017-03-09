@@ -8,7 +8,7 @@
 # No documentation yet
 # ========================================================
 
-#' @useDynLib discretecdAlgorithm
+#' @useDynLib discretecdAlgorithm, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
 
@@ -175,6 +175,8 @@ CD_call <- function(indata,
 
   # Check data format
   if(!sparsebnUtils::is.sparsebnData(data)) stop(sparsebnUtils::input_not_sparsebnData(data))
+  count_levels <- sparsebnUtils::auto_count_levels(data$data)
+  if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
 
   # Extract the data and the intervention list.
   data_matrix <- data$data
@@ -184,6 +186,7 @@ CD_call <- function(indata,
     data_ivn <- as.list(rep(0L, nrow(data_matrix)))
   }
   if (length(data_ivn)!= nrow(data_matrix)) stop("length of ivn should be equals to number of observations!")
+  node_index <- 0:ncol(data_matrix)
   data_level <- data$levels
   data_names <- names(data$data)
 
@@ -235,6 +238,8 @@ CD_call <- function(indata,
   if(is.null(weights)) {
     weights <- matrix(1, node, node)
   }
+  if(ncol(weights)!=nrow(weights)) stop("weights should be a square matrix!")
+  if(ncol(weights)!=node) stop("wrong dimension for weights, number of colmn of weight matrix should be node")
   weights <- matrix(as.numeric(weights), ncol = node)
 
   # type conversion for tunning parameters
@@ -342,6 +347,9 @@ CD_path <- function(node,
   # check data_matrix
   if(node!=ncol(data_matrix) || dataSize!=nrow(data_matrix)) stop("dimension does not match. node should be the number of columns of data matrix, and dataSize should be numbe of rows of data matrix.")
   if(sum(sapply(data_matrix, function(x){!is.integer(x)}))!=0) stop ("data_matrix has to be a data.frame with integer entries!")
+  count_levels <- sparsebnUtils::auto_count_levels(data_matrix)
+  if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
+
 
   # check n_levels
   if (!is.integer(n_levels)) stop("n_levels must be a vector of integers!")

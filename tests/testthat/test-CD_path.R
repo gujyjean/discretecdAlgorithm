@@ -105,6 +105,11 @@ test_that("Ckeck input: data_matrix", {
   ### throw an error if the input data_matrix has the wrong number of columns.
   data_wrong_node <- data_matrix[, 1:3]
   expect_error(CD_path(node, dataSize, data_matrix = data_wrong_node, n_levels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold))
+
+  data_oneLevel <- data_matrix
+  data_oneLevel[, 1] <- rep(0, nrow(data_matrix))
+  expect_error(CD_call(indata = data_oneLevel, eor = NULL, permute = TRUE, weights = NULL, lambda_seq = NULL, fmlam = 0.1, nlam = 30, eps = 0.0001, convLb = 0.01, qtol = 0.0001, gamma = 1, upperbound = 100, threshold = 3))
+
 })
 
 test_that("Check input: n_levels", {
@@ -242,4 +247,13 @@ test_that("Check input: threshold", {
 
   ### throw an error if threshold is negative
   expect_error(CD_path(node, dataSize, data_matrix, n_levels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold = as.integer(-5)))
+})
+
+test_that("Check output", {
+  ### output is a list of length 2
+  fit <- CD_path(node, dataSize, data_matrix, n_levels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold)
+  expect_equal(length(fit), 3)
+  expect_equal(class(fit[[1]]), "matrix")
+  expect_equal(class(fit[[2]]), "numeric")
+  expect_equal(class(fit[[3]]), "matrix")
 })

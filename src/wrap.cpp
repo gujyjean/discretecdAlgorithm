@@ -5,6 +5,13 @@
 #include <iostream>
 using namespace Rcpp;
 
+// temporary solution to "Found no calls to: R_registerRoutines, R_useDynamicSymbols"
+// https://github.com/RcppCore/Rcpp/issues/636#issuecomment-280985661
+void R_init_ccdrAlgorithm(DllInfo* info) {
+  R_registerRoutines(info, NULL, NULL, NULL, NULL);
+  R_useDynamicSymbols(info, TRUE);
+}
+
 
 // This is a simple example of exporting a C++ function to R. You can
 // source this function into an R session using the Rcpp::sourceCpp

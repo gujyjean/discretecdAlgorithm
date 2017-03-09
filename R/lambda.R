@@ -62,6 +62,11 @@ lambda_call <- function(indata,
   data_matrix <- data$data
   data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
+  if (is.null(data_ivn)) {
+    data_ivn <- as.list(rep(0L, nrow(data_matrix)))
+  }
+  if (length(data_ivn)!= nrow(data_matrix)) stop("length of ivn should be equals to number of observations!")
+  node_index <- 0:ncol(data_matrix)
   data_level <- data$levels
 
   # Get the dimensions of the data matrix
@@ -91,6 +96,8 @@ lambda_call <- function(indata,
   if(is.null(weights)) {
     weights <- matrix(1, node, node)
   }
+  if(ncol(weights)!=nrow(weights)) stop("weights should be a square matrix!")
+  if(ncol(weights)!=node) stop("wrong dimension for weights, number of colmn of weight matrix should be node")
   weights <- matrix(as.numeric(weights), ncol = node)
 
   # type conversion for tunning parameters

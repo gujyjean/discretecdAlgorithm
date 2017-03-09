@@ -4,8 +4,7 @@
 \alias{generate_discrete_data}
 \title{generate_discrete_data}
 \usage{
-generate_discrete_data(graph, params = NULL, n, ivn = NULL,
-  n_levels = NULL)
+generate_discrete_data(graph, params, n, ivn = NULL, n_levels = NULL)
 }
 \arguments{
 \item{graph}{a \code{\link[sparsebnUtils]{edgeList}} object.}
@@ -16,7 +15,7 @@ generate_discrete_data(graph, params = NULL, n, ivn = NULL,
 
 \item{ivn, }{a list of intervention for each data point.}
 
-\item{n_levels, }{a list of number of levels for each node, default is binary data set.}
+\item{n_levels, }{a vector of number of levels for each node.}
 }
 \value{
 data matrix

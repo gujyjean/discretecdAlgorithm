@@ -6,11 +6,11 @@
 #' @param params, coefficient list.
 #' @param n size of the data set, a scaler
 #' @param ivn, a list of intervention for each data point.
-#' @param n_levels, a list of number of levels for each node, default is binary data set.
+#' @param n_levels, a vector of number of levels for each node.
 #' @return data matrix
 #' @export
 generate_discrete_data <- function(graph,
-                                   params = NULL,
+                                   params,
                                    n,
                                    ivn = NULL,
                                    n_levels = NULL)
@@ -30,6 +30,7 @@ datGen_call <- function(edge_list,
 {
   # check input
   if(!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be a edgeList object!")
+  if(is.null(names(edge_list))) stop("edge_list must be named!")
 
   node_name <- names(edge_list)
   dag_igraph <- sparsebnUtils::to_igraph(edge_list)
@@ -63,9 +64,10 @@ datGen_call <- function(edge_list,
     ivn <- as.list(rep(0, dataSize))
   }
   else {
+    if(!is.list(ivn)) stop("ivn must be a list!")
+    if (sum(sapply(ivn, function(x){!is.character(x)}))) stop("ivn must be a list of strings, or NA")
     ivn <- lapply(ivn, function(x) match(x, node_name))
   }
-  if(!is.list(ivn)) stop("ivn must be a list!")
   if(length(ivn)!=dataSize) stop("length of ivn not compatible with data_size")
   ivn <- lapply(ivn, function(x){
     if (is.null(x)) {
@@ -76,13 +78,15 @@ datGen_call <- function(edge_list,
   if (is.null(nlevels)) {
     nlevels <- rep(2, node)
   }
+  # if (is.null(nlevels)) stop("nlevels must can not be a NULL value")
   if(!is.vector(nlevels)) stop("n_levels must be a vector!")
   if(sum(nlevels<2)) stop("number of levels must be at least 2!")
   if(length(nlevels)!=node) stop("length of n_levels not compatible with edge_list!")
   nlevels <- as.integer(nlevels)
 
-  if(is.null(coef)) stop("coef must have some value!")
+  # if(is.null(coef)) stop("coef must have some value!")
   if(!is.list(coef)) stop("coef must be a list!")
+  if(length(coef)!=node) stop("length of coef must be the same with number of nodes!")
   # check type of list element
   if (sum(sapply(coef, function(x){!is.matrix(x) && !is.null(x)}))) stop("element of coeff must be matrix!")
   # check dimension of the list element
@@ -105,8 +109,8 @@ datGen_call <- function(edge_list,
     out <- NULL
     if (length(edge_list[[x]])) {
       index <- rep(1:(length(edge_list[[x]])+1), c(1, nlevels[edge_list[[x]]]-1))
-      m_to_list <- vector("list", length = length(index))
-      for (i in 1:length(index)) {
+      m_to_list <- vector("list", length = length(edge_list[[x]])+1)
+      for (i in 1:(length(edge_list[[x]])+1)) {
         m_to_list[[i]] <- coef[[x]][, index==i, drop = FALSE]
       }
       out = m_to_list
@@ -146,7 +150,7 @@ DatGen_cpp <- function(maxdeg,
 
   # check for ordex
   if(!is.matrix(ordex)) stop("ordex must be a matrix!")
-  if(sum(sapply(ordex, function(x){!is.integer(x)}))!=0) stop ("ordex has to be a matrix with integer entries!")
+  if(sum(sapply(ordex, function(x){!is.integer(x)}))) stop ("ordex has to be a matrix with integer entries!")
   if(nrow(ordex) != maxdeg) stop("Incompatible size! Number of rows of ordex should maxdeg!")
   if(ncol(ordex) != node) stop("Incompatible size! Number of columns of ordex should be node!")
 
@@ -154,6 +158,7 @@ DatGen_cpp <- function(maxdeg,
   if(!is.vector(ts)) stop("ts must be a vector!")
   if(length(ts)!=node) stop("ts must have length node!")
   if(sum(!is.integer(ts))) stop("ts must be a vector of integer elements!")
+  if(sum(sort(ts)!=(1:node))) stop("ts is not a valid topological sort for node!")
 
   # check for dataSize
   if(!is.integer(dataSize)) stop("dataSize must be an integer!")
@@ -161,7 +166,7 @@ DatGen_cpp <- function(maxdeg,
 
   # check for ivn
   if(!is.list(ivn)) stop("ivn must be a list")
-  if(sum(sapply(ordex, function(x){sum(!is.integer(x)!=0)}))) stop("ivn must be a list of integer vectors!")
+  if(sum(sapply(ivn, function(x){sum(!is.integer(x))}))) stop("ivn must be a list of integer vectors!")
   if(length(ivn)!=dataSize) stop("ivn must be a list of length dataSize!")
 
   # check for nlevels
@@ -182,18 +187,22 @@ DatGen_cpp <- function(maxdeg,
       }
     }
   }
+
+  if (length(coef_length)!= node) stop("length of coef_length should be node!")
+
   for (i in 1:node) {
     if (length(coef_list[[i]])) {
-      for (j in 1:length(coef_list[[i]])) {
-        if (!is.numeric(coef_list[[i]][[j]])) {
-          cat("error!")
-          # stop("element of coef_list must be NULL or a numeric matrix!")
-        }
+      temp_parent <- ordex[, i][which(ordex[, i]!=0)]
+      if (length(coef_list[[i]])!=length(temp_parent)+1) stop("Length of coef_list sublist not compatible with number of parents!")
+      if (nrow(coef_list[[i]][[1]])!=nlevels[i]) stop("number of rows for intercept should be the numebr of levels of the node!")
+      if (ncol(coef_list[[i]][[1]])!=1) stop("number of columns for itercept should be 1!")
+      for (j in 2:length(coef_list[[i]])) {
+        if (nrow(coef_list[[i]][[j]])!=nlevels[i]) stop("number of rows for coefficient matrix for an edge should be the numebr of levels of the child!")
+        if (ncol(coef_list[[i]][[j]])!=nlevels[temp_parent[j-1]]-1) stop("number of columns for coeffecient matrix for an edge should be the numebr of levels of parent minus 1!")
       }
     }
   }
 
-  if (length(coef_length)!= node) stop("length of coef_length should be node!")
   if (!is.integer(coef_length)) stop("coef_length must be an integer!")
 
   # call function from cpp
@@ -210,12 +219,19 @@ DatGen_cpp <- function(maxdeg,
 #' @param flip, a bool parameter. If true, will randomly flip the sign of coefficients.
 #' @return A list of coefficient matrix
 #' @export
-coef_gen <- function(edge_list, n_levels, FUN=NULL, flip=TRUE) {
+coef_gen <- function(edge_list, n_levels = NULL, FUN=NULL, flip=TRUE) {
+  if (!sparsebnUtils::is.edgeList(edge_list)) stop("edge_list must be an edge_list object!")
+
   if (is.null(FUN)) {
     FUN <- function(n) {
       stats::runif(n, 1, 3)
     }
   }
+  if(is.null(n_levels)) {
+    n_levels <- rep(2, length(edge_list))
+  }
+  if(sum(n_levels <= 1)) stop("Number of levels for each node must be at least 2!")
+
   coef <- lapply(1:length(edge_list), function(x, edge_list, flip){
     if (length(edge_list[[x]])==0) {
       coef_matrix <- NULL;
@@ -259,10 +275,17 @@ data_gen <- function(graph,
                      FUN = NULL,
                      flip = TRUE)
 {
+  # check graph
+  if(!sparsebnUtils::is.edgeList(graph)) stop("graph must be an edgeList object!")
+
+  # check n
+  if (n<1) stop("n must be a postive number!")
+
   # check n_levels
   if(is.null(n_levels)) {
     n_levels <- rep(2, length(graph))
   }
+  if(sum(n_levels <= 1)) stop("Number of levels for each node must be at least 2!")
 
   # check coef
   if(is.null(params)) {

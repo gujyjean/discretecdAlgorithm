@@ -4,7 +4,7 @@
 \alias{coef_gen}
 \title{coef_gen}
 \usage{
-coef_gen(edge_list, n_levels, FUN = NULL, flip = TRUE)
+coef_gen(edge_list, n_levels = NULL, FUN = NULL, flip = TRUE)
 }
 \arguments{
 \item{edge_list}{a \code{\link[sparsebnUtils]{edgeList}} object.}
