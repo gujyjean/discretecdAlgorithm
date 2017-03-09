@@ -33,7 +33,9 @@ datGen_call <- function(edge_list,
   if(is.null(names(edge_list))) stop("edge_list must be named!")
 
   node_name <- names(edge_list)
-  dag_igraph <- sparsebnUtils::to_igraph(edge_list)
+  adj_matrix <- sparsebnUtils::get.adjacency.matrix(edge_list)
+  dag_igraph <- igraph::graph.adjacency(as.matrix(adj_matrix))
+  # dag_igraph <- sparsebnUtils::to_igraph(edge_list)
 
   edge_list <- as.list(edge_list)
   edge_list <- lapply(edge_list, as.integer)
