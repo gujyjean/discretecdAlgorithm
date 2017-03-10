@@ -10,7 +10,7 @@ Description: Structure learning of Bayesian network using coordinate-descent
 License: GPL (>= 2)
 LazyData: TRUE
 Depends:
-    R (>= 3.3.2)
+    R (>= 3.2.3)
 Imports:
     Rcpp (>= 0.11.0), 
     sparsebnUtils (>= 0.0.4), 
