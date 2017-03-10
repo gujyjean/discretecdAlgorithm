@@ -1,7 +1,7 @@
 Package: discretecdAlgorithm
 Type: Package
 Title: Coordinate-Descent Algorithm for Discrete Data
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: person("Jiaying", "Gu", email = "gujy.lola@gmail.com", role = c("aut", "cre"))
 Description: Structure learning of Bayesian network using coordinate-descent
     algorithm. This algorithm is designed for discrete network assuming a multinomial data set,
@@ -10,9 +10,12 @@ Description: Structure learning of Bayesian network using coordinate-descent
 License: GPL (>= 2)
 LazyData: TRUE
 Depends:
-    R (>= 3.2.3)
+    R (>= 3.3.2)
 Imports:
-    Rcpp, sparsebnUtils, igraph, nnet
+    Rcpp (>= 0.11.0), 
+    sparsebnUtils (>= 0.0.4), 
+    igraph, 
+    nnet
 Suggests: testthat,
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 6.0.1
