@@ -14,8 +14,7 @@ Depends:
 Imports:
     Rcpp (>= 0.11.0), 
     sparsebnUtils (>= 0.0.4), 
-    igraph, 
-    nnet
+    igraph
 Suggests: testthat,
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 6.0.1
