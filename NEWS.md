@@ -1,3 +1,13 @@
+# discretecdAlgorithm 0.0.3
+
+## Major changes
+
+* Added `generate_discrete_data()` method to generate categorical data set from multi-logit model from a DAG given coefficient list.
+* Added `data_gen()` method to generate a list of coefficients. And calls `generate_discrete_data()` to generate a categorical data set from multi-logit model from a DAG.
+
+## Bug fixes
+* Added input check for `indata`, so that if a node has only one level, cd.run() will remind users to remove the column. 
+
 # discretecdAlgorithm 0.0.2
 
 ## Major changes

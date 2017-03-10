@@ -1,6 +1,6 @@
 ## Test environments
-* local OS X install, R 3.3.2
-* ubuntu 12.04.5 (travis-ci), R 3.3.2(oldrel, devel, and release)
+* local OS X install, R 3.3.3
+* ubuntu 12.04.5 (travis-ci: oldrel, devel, and release)
 * win-builder (devel and release)
 
 ## R CMD check results
@@ -23,11 +23,11 @@ Fu, Gu, Zhou are all last names of authors of the paper referenced in this packa
   
 There was 1 note from travis-ci:
 * checking installed package size ... NOTE
-  installed size is  9.5Mb
+  installed size is  9.4Mb
   sub-directories of 1Mb or more:
-    libs   9.4Mb
+    libs   9.3Mb
     
-This package imports from RcppEigen, and RcppEigen has installed size 27.2MB. Therefore this package can be relatively big.
+This package imports from RcppEigen, and RcppEigen has installed size 27.0MB. Therefore this package can be relatively big.
 
 ## Reverse dependencies
-* sparsebn: You will receive update for this package very soon from Bryon. I have tested the latest developer's version and have run R CMD check, there is no ERRORs, WARNINGs, or NOTEs.
+* sparsebn: I have tested current version of sparsebn on CRAN, there is no ERRORs, WARNINGs or NOTES. You will receive update for this package very soon from Bryon. I have also tested the latest developer's version and have run R CMD check, there is no ERRORs, WARNINGs, or NOTEs.
