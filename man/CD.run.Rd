@@ -6,7 +6,7 @@
 \usage{
 cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
   error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100,
-  alpha = 3, permute = FALSE, adaptive = FALSE)
+  alpha = 3, permute = FALSE, adaptive = FALSE, ts = NULL)
 }
 \arguments{
 \item{indata}{A sparsebnData object.}
@@ -40,6 +40,8 @@ current DAG estimate is \code{> alpha * ncol(data)}.}
 
 \item{adaptive}{A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
 If TRUE, an adaptive lasso algorithm will be run.}
+
+\item{ts}{A vector, if order is known, this arguement is required.}
 }
 \value{
 A \code{\link[sparsebnUtils]{sparsebnPath}} object.

@@ -42,7 +42,7 @@ databn_int <- sparsebnUtils::sparsebnData(data, ivn = ivn_int, type = "discrete"
 # test
 test_that("Testing cd_adaptive_run with adaptive option", {
   weights <- matrix(1, nrow=node, ncol=node)
-  final <- cd_adaptive_run(databn_obs, eor = NULL, weights=weights, lambda_seq=NULL, fmlam = 0.01, nlam = 10, eps=0.0001, convLb=0.02, qtol = 0.00001, gamma=1, upperbound=100.0, threshold = 10, permute = TRUE, adaptive = TRUE)
+  final <- cd_adaptive_run(databn_obs, eor = NULL, weights=weights, lambda_seq=NULL, fmlam = 0.01, nlam = 10, eps=0.0001, convLb=0.02, qtol = 0.00001, gamma=1, upperbound=100.0, threshold = 10, permute = TRUE, adaptive = TRUE, ts = NULL)
 
   ### check output type
   expect_is(final, "list")
@@ -63,7 +63,7 @@ test_that("Testing cd_adaptive_run with adaptive option", {
 
 test_that("Testing cd_adaptive_run with none adaptive option", {
   weights <- matrix(1, nrow=node, ncol=node)
-  final <- cd_adaptive_run(databn_obs, eor = NULL, weights=weights, lambda_seq=NULL, fmlam = 0.01, nlam = 10, eps=0.0001, convLb=0.02, qtol = 0.00001, gamma=1, upperbound=100.0, threshold = 10, permute = TRUE, adaptive = FALSE)
+  final <- cd_adaptive_run(databn_obs, eor = NULL, weights=weights, lambda_seq=NULL, fmlam = 0.01, nlam = 10, eps=0.0001, convLb=0.02, qtol = 0.00001, gamma=1, upperbound=100.0, threshold = 10, permute = TRUE, adaptive = FALSE, ts = NULL)
 
   ### check output type
   expect_is(final, "list")
