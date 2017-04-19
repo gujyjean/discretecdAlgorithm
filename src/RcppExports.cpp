@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // CD
-List CD(int node, int dataSize, Eigen::Map<Eigen::MatrixXi> data, Eigen::Map<Eigen::VectorXi> nlevels, List obsIndex_R, int eor_nr, Eigen::Map<Eigen::MatrixXi> eor, Eigen::Map<Eigen::VectorXd> lambda_seq, int nlam, double eps, double convLb, double qtol, Eigen::Map<Eigen::MatrixXd> weights, double gamma, double upperbound, int threshold);
-RcppExport SEXP discretecdAlgorithm_CD(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP eor_nrSEXP, SEXP eorSEXP, SEXP lambda_seqSEXP, SEXP nlamSEXP, SEXP epsSEXP, SEXP convLbSEXP, SEXP qtolSEXP, SEXP weightsSEXP, SEXP gammaSEXP, SEXP upperboundSEXP, SEXP thresholdSEXP) {
+List CD(int node, int dataSize, Eigen::Map<Eigen::MatrixXi> data, Eigen::Map<Eigen::VectorXi> nlevels, List obsIndex_R, int eor_nr, Eigen::Map<Eigen::MatrixXi> eor, Eigen::Map<Eigen::VectorXd> lambda_seq, int nlam, double eps, double convLb, double qtol, Eigen::Map<Eigen::MatrixXd> weights, double gamma, bool order, double upperbound, int threshold);
+RcppExport SEXP discretecdAlgorithm_CD(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP eor_nrSEXP, SEXP eorSEXP, SEXP lambda_seqSEXP, SEXP nlamSEXP, SEXP epsSEXP, SEXP convLbSEXP, SEXP qtolSEXP, SEXP weightsSEXP, SEXP gammaSEXP, SEXP orderSEXP, SEXP upperboundSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,9 +26,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type qtol(qtolSEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< bool >::type order(orderSEXP);
     Rcpp::traits::input_parameter< double >::type upperbound(upperboundSEXP);
     Rcpp::traits::input_parameter< int >::type threshold(thresholdSEXP);
-    rcpp_result_gen = Rcpp::wrap(CD(node, dataSize, data, nlevels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold));
+    rcpp_result_gen = Rcpp::wrap(CD(node, dataSize, data, nlevels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, order, upperbound, threshold));
     return rcpp_result_gen;
 END_RCPP
 }

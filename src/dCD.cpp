@@ -1177,11 +1177,76 @@ void OneCDLoop(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& 
 }
 
 
+void outerRegression(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eor, vector<int>& active, double& MAD, const VectorXi& nobsVec,
+               const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
+               MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
+               const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
+{
+  /* betaM(node, j) and hvals(node, j) stores the intercept terms for the jth problem. */
+
+  int rn, pn, rCount1, n1, d1, r1, it1;
+  double alpha;
+  bool need_update1, isBetaZeroFlag1;
+  MatrixXd dmt1(maxRows, maxCols), logitm_Tmp, logitm_Tmp1, beta_Tmp1, yMp;
+  MatrixXi nzIndt1(maxRows * maxCols, 2);
+  VectorXd rowMax, log_values;
+  VectorXi yInd;
+  MAD = 0.0;
+  double delta = 0.5;
+  double sigma = 0.1;
+
+  for (it1 = 0; it1 < eor_nr; ++it1)
+  {
+
+    rn = eor(it1, 0) - 1;
+    pn = eor(it1, 1) - 1;
+    G(rn, pn) = G(pn, rn) = 0;
+
+    n1 = nobsVec(pn);	d1 = ndfs(rn, pn);	r1 = ndfs(pn, pn);
+
+    // create a local copy of the design matrix of node rn
+    dmFetch(dmt1, nzIndt1, rCount1, dM(rn), n1, d1, obsIndex(pn), levelIndex(rn, pn), scales(rn, pn));
+
+    // update beta
+    MatrixXd grad(d1, r1), dif(d1, r1);
+    NewtonIterTmp_GD(n1, d1, r1, rCount1, dmt1, yM(pn), nzIndt1, logitM(pn), betaM(rn, pn), IsBetaZeros(rn, pn), hvals(rn, pn), penalties(rn, pn), qtol, grad, dif, logitm_Tmp1, beta_Tmp1, isBetaZeroFlag1, need_update1);
+
+    if (need_update1) {
+
+      alpha = 1.0;
+      // use line search to update beta and logit matrix.
+
+      lineSearch(betaM(rn, pn), beta_Tmp1, logitM(pn), logitm_Tmp1, yNZIndex(pn), penalties(rn, pn), nzIndt1, dmt1, dif, grad, alpha, delta, sigma, IsBetaZeros(rn, pn), isBetaZeroFlag1, n1, rCount1, d1, r1, need_update1);
+
+      if (need_update1) {
+        MAD = max(MAD, (beta_Tmp1-betaM(rn, pn)).lpNorm<Infinity>());
+        betaM(rn, pn) = beta_Tmp1;
+        logitM(pn) = logitm_Tmp1;
+        IsBetaZeros(rn, pn) = isBetaZeroFlag1;
+
+        // update intercept
+        auto beta_inter_Tmp = betaM(node, pn);
+        InterceptUpdate(n1, yM(pn), logitM(pn), betaM(node, pn), hvals(node, pn), qtol);
+        betaM(node, pn) = beta_inter_Tmp + alpha*(betaM(node, pn)-beta_inter_Tmp);
+        MAD = max(MAD, (beta_inter_Tmp - betaM(node, pn)).lpNorm<Infinity>());
+
+      }
+    }
+
+    // update the graph and the active set
+    if (!IsBetaZeros(rn, pn)) // rn to pn
+    {
+      G(rn, pn) = 1;
+      active.push_back(it1);
+    }
+  }
+}
+
 
 void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi& eor, const double& eps, const VectorXi& nobsVec,
                 const MatrixXi& ndfs, const VectorXMXd& dM, const VectorXMXd& yM, const VectorXVXi& yNZIndex, VectorXMXd& logitM, MatrixXMXd& betaM,
                 MatrixXb& IsBetaZeros, const MatrixXd& hvals, const MatrixXd& penalties, const double& qtol, const VectorXVXi& obsIndex,
-                const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols)
+                const MatrixXVXi& levelIndex, const MatrixXVXd& scales, const int& maxRows, const int& maxCols, const bool& order)
 {
     double MAD;
     unsigned int num;
@@ -1195,8 +1260,14 @@ void CDOnePoint(const int& node, MatrixXi& G, const int& eor_nr, const MatrixXi&
         vector<int> active;
         vector<int> numbers;
 
-		OneCDLoop(node, G, eor_nr, eor, active, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
-				 IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
+        if (order) {
+          outerRegression(node, G, eor_nr, eor, active, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
+                    IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
+        }
+        else {
+          OneCDLoop(node, G, eor_nr, eor, active, MAD, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
+                    IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
+        }
 
         times1++;
 
@@ -1274,7 +1345,7 @@ Let's define the jth problem as follows: using node j as the response and all ot
 6. yNZIndex: a p by 1 vector. Each element j is a vector whose hth element is the nonzero level for node j in sample h.
 7. upperbound: a large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.
 */
-void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, int nlam, double eps, double convLb, double qtol, VectorXd& lambdaSeq, VectorXd& log_like, VectorXd& dur, MatrixXMXd& betaM, MatrixXMXd& betaN, MatrixXi& estimateG, MatrixXd& weights, double gamma, double upperbound, int threshold)
+void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevels, const VectorXVXi& obsIndex, const MatrixXVXi& levelIndex, int eor_nr, const MatrixXi& eor, int nlam, double eps, double convLb, double qtol, VectorXd& lambdaSeq, VectorXd& log_like, VectorXd& dur, MatrixXMXd& betaM, MatrixXMXd& betaN, MatrixXi& estimateG, MatrixXd& weights, double gamma, bool order, double upperbound, int threshold)
 {
 	int maxRows = dataSize, maxCols = nlevels.maxCoeff(); //nlevels record number of levels for each node.
 	if(upperbound >= 0.0) // to calculate weights
@@ -1449,7 +1520,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 
         start = clock();
 		CDOnePoint(node, G, eor_nr, eor, eps, nobsVec, ndfs, dM, yM, yNZIndex, logitM, betaM,
-				  IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols);
+				  IsBetaZeros, hvals, penalties, qtol, obsIndex, levelIndex, scales, maxRows, maxCols, order);
         finish = clock();
 
         //comput the log_likelihood for each lambda

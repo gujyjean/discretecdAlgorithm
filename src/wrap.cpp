@@ -49,6 +49,7 @@ List CD(            int node,
                     double qtol,
                     Eigen::Map<Eigen::MatrixXd> weights,
                     double gamma,
+                    bool order,
                     double upperbound,
                     int threshold
 ) {
@@ -123,7 +124,7 @@ List CD(            int node,
 
   CDAlgo(node, dataSize, t_data, t_nlevels, obsIndex, levelIndex, eor_nr, t_eor,
          nlam, eps, convLb, qtol, lambdaSeq, log_like, dur, betaM, betaN,
-         estimateG, t_weights, gamma, upperbound, threshold);
+         estimateG, t_weights, gamma, order, upperbound, threshold);
 
   NumericMatrix adaptWeights(node, node);
   for (int i=0; i<node; i++) {
