@@ -182,14 +182,15 @@ CD_call <- function(indata,
   if(!sparsebnUtils::is.sparsebnData(data)) stop(sparsebnUtils::input_not_sparsebnData(data))
 
   # Extract the data and the intervention list.
-  data_matrix <- data$data
-  data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
-  count_levels <- unlist(sparsebnUtils::auto_count_levels(data$data))
-  min_levels <- sapply(data$data, min)
-  if (sum(min_levels)) stop("data level must start from 0!")
-  max_levels <- sapply(data$data, max)
-  if (sum((max_levels+1)>count_levels)) stop("There are missing levels. Please refactor levels!")
-  if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
+  data_matrix <- dat_transform(data)
+  # data_matrix <- data$data
+  # data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
+  # count_levels <- unlist(sparsebnUtils::auto_count_levels(data$data))
+  # min_levels <- sapply(data$data, min)
+  # if (sum(min_levels)) stop("data level must start from 0!")
+  # max_levels <- sapply(data$data, max)
+  # if (sum((max_levels+1)>count_levels)) stop("There are missing levels. Please refactor levels!")
+  # if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
 
   data_ivn <- data$ivn
   if (is.null(data_ivn)) {
@@ -209,7 +210,7 @@ CD_call <- function(indata,
 
   # get n_levels.
   n_levels <- as.integer(sapply(data$levels, function(x){length(x)}))
-  # n_levels <- as.integer(max_levels+1)
+  if(sum(n_levels<2)) stop("There must be at least two levels for each node!")
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)
@@ -377,13 +378,14 @@ CD_path <- function(node,
   # check data_matrix
   if(node!=ncol(data_matrix) || dataSize!=nrow(data_matrix)) stop("dimension does not match. node should be the number of columns of data matrix, and dataSize should be numbe of rows of data matrix.")
   if(sum(sapply(data_matrix, function(x){!is.integer(x)}))!=0) stop ("data_matrix has to be a data.frame with integer entries!")
-  count_levels <- unlist(sparsebnUtils::auto_count_levels(data_matrix))
-  if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
+  # count_levels <- unlist(sparsebnUtils::auto_count_levels(data_matrix))
+  # if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
 
 
   # check n_levels
   if (!is.integer(n_levels)) stop("n_levels must be a vector of integers!")
   if (length(n_levels)!=node) stop("Length of n_levels does not compatible with the input data set. n_levels must be a vector of length equals to the number of node!")
+  if(sum(n_levels<2)) stop("There must be at least two levels for each node!")
 
   # check obsIndex_R
   if (!is.list(obsIndex_R)) stop("obsIndex_R must be a list!")

@@ -59,8 +59,8 @@ lambda_call <- function(indata,
   if(!sparsebnUtils::is.sparsebnData(data)) stop(sparsebnUtils::input_not_sparsebnData(data))
 
   # Extract the data and the intervention list.
-  data_matrix <- data$data
-  data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
+  data_matrix <- dat_transform(data)
+  # data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
   data_ivn <- data$ivn
   if (is.null(data_ivn)) {
     data_ivn <- as.list(rep(0L, nrow(data_matrix)))
@@ -78,6 +78,7 @@ lambda_call <- function(indata,
 
   # get n_levels.
   n_levels <- as.integer(sapply(data$levels, function(x){length(x)}))
+  if(sum(n_levels<2)) stop("There must be at least two levels for each node!")
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)
@@ -144,6 +145,7 @@ calc_lambda <- function(node,
   # check n_levels
   if (!is.integer(n_levels)) stop("n_levels must be a vector of integers!")
   if (length(n_levels)!=node) stop("Length of n_levels does not compatible with the input data set. n_levels must be a vector of length equals to the number of node!")
+  if(sum(n_levels<2)) stop("There must be at least two levels for each node!")
 
   # check obsIndex_R
   if (!is.list(obsIndex_R)) stop("obsIndex_R must be a list!")
