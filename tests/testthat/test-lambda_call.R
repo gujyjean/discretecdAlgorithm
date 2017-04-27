@@ -51,6 +51,11 @@ test_that("Check input for indata", {
   ### input wrong indata should throw error
   data_list <- as.list(data)
   expect_error(lambda_call(indata = data_list, weights = NULL, gamma = 1, upperbound = 100))
+
+  ### input wrong levels should throw an error
+  data_oneLevel <- databn
+  data_oneLevel$levels[[1]] <-0
+  expect_error(CD_call(indata = data_oneLevel, eor = NULL, permute = TRUE, weights = NULL, lambda_seq = NULL, fmlam = 0.1, nlam = 30, eps = 0.0001, convLb = 0.01, qtol = 0.0001, gamma = 1, upperbound = 100, threshold = 3))
 })
 
 test_that("Check input ivn", {

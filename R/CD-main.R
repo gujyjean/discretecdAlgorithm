@@ -175,12 +175,9 @@ CD_call <- function(indata,
 
   # Check data format
   if(!sparsebnUtils::is.sparsebnData(data)) stop(sparsebnUtils::input_not_sparsebnData(data))
-  count_levels <- sparsebnUtils::auto_count_levels(data$data)
-  if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
 
   # Extract the data and the intervention list.
-  data_matrix <- data$data
-  data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
+  data_matrix <- dat_transform(data)
   data_ivn <- data$ivn
   if (is.null(data_ivn)) {
     data_ivn <- as.list(rep(0L, nrow(data_matrix)))
@@ -199,6 +196,7 @@ CD_call <- function(indata,
 
   # get n_levels.
   n_levels <- as.integer(sapply(data$levels, function(x){length(x)}))
+  if(sum(n_levels<2)) stop("Some nodes has only one level! There must be at least two levels for each node! Remove nodes with one level!")
 
   # get observational index (obsIndex_R) from interventional list (ivn)
   obsIndex_R <- get_obsIndex(data_ivn, node)
@@ -347,13 +345,13 @@ CD_path <- function(node,
   # check data_matrix
   if(node!=ncol(data_matrix) || dataSize!=nrow(data_matrix)) stop("dimension does not match. node should be the number of columns of data matrix, and dataSize should be numbe of rows of data matrix.")
   if(sum(sapply(data_matrix, function(x){!is.integer(x)}))!=0) stop ("data_matrix has to be a data.frame with integer entries!")
-  count_levels <- sparsebnUtils::auto_count_levels(data_matrix)
-  if(sum(count_levels<2)) stop("There must be at least two levels for each node!")
-
 
   # check n_levels
   if (!is.integer(n_levels)) stop("n_levels must be a vector of integers!")
   if (length(n_levels)!=node) stop("Length of n_levels does not compatible with the input data set. n_levels must be a vector of length equals to the number of node!")
+  if(sum(n_levels<2)) stop("Some node has only one level! There must be at least two levels for each node! Remove nodes with one level!")
+  max_levels <- sapply(as.data.frame(data_matrix), function(x){length(unique(x))})
+  if (sum(max_levels>n_levels)) stop("The number of levels and the data set is not compatible! Check data set and the input ivn list!")
 
   # check obsIndex_R
   if (!is.list(obsIndex_R)) stop("obsIndex_R must be a list!")

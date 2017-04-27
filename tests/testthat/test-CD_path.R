@@ -119,6 +119,17 @@ test_that("Check input: n_levels", {
   ### throw an error if the input n_levels has the wrong dimension
   n_level_wrong_dim <- rep(2, 10)
   expect_error(CD_path(node, dataSize, data_matrix, n_levels = n_level_wrong_dim, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold))
+
+  ### throw an error if n_level is less than 2
+  n_level_one <- n_levels
+  n_level_one[1] <- 1
+  expect_error(CD_path(node, dataSize, data_matrix, n_levels = n_level_one, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold))
+
+  ### throw an error if n_level has less level than data set
+  data_matrix_more_level <- data_matrix
+  data_matrix_more_level[1, 1] <- 2L
+  expect_error(CD_path(node, dataSize, data_matrix = data_matrix_more_level, n_levels = n_levels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold))
+
 })
 
 test_that("Check input: obsIndex_R", {

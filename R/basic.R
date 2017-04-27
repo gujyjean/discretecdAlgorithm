@@ -49,3 +49,24 @@ get_adaptWeights <- function(beta_l2, max.weights = 10^5) {
 
   return(cd.weights)
 }
+
+dat_transform <- function(datbn) {
+  data_matrix <- datbn$data
+  for (i in 1:ncol(data_matrix)) {
+    if (!is.numeric(data_matrix[[i]]) && !is.factor(data_matrix[[i]])) stop("data must be a data.frame object with integer or factor columns!")
+  }
+  data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(x)}))
+
+  # test if the number of levels in data set is compatible with the number of true levels.
+  dat_levels <- sapply(datbn$levels, length)
+  max_levels <- sapply(data_matrix, max)
+  if (sum(max_levels>dat_levels)) {
+    data_matrix <- as.data.frame(sapply(data_matrix, function(x){as.integer(as.factor(x))}))
+  }
+  max_levels <- sapply(data_matrix, max)
+  if (sum(max_levels>dat_levels)) stop("The number of levels and the data set is not compatible! Check data set and the input ivn list!")
+  # adjust the levels to start from 0
+  min_levels <- sapply(data_matrix, min)
+  data_matrix <- as.data.frame(sapply(1:ncol(data_matrix), function(x, data_matrix, min_levels){as.integer(data_matrix[, x]-min_levels[x])}, data_matrix, min_levels))
+  return(data_matrix)
+}
