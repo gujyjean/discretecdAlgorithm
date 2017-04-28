@@ -101,8 +101,8 @@ test_that("Check input ts", {
   expect_error(DatGen_cpp(maxdeg = maxdeg, node = node, ordex = ordex, ts = ts_num, dataSize = dataSize, ivn =ivn, nlevels = nlevels, coef_list = coef_list, coef_length = coef_length))
 
   ### Throw error if ts is not a valid ordering
-  ts_notOrder <- as.integer(1, 2, 3, 3, 5)
-  expect_error(DatGen_cpp(maxdeg = maxdeg, node = node, ordex = ordex, ts = ts_notOrder, dataSize = dataSize, ivn =ivn, nlevels = nlevels, coef_list = coef_list, coef_length = coef_length))
+  # ts_notOrder <- as.integer(1, 2, 3, 3, 5)
+  # expect_error(DatGen_cpp(maxdeg = maxdeg, node = node, ordex = ordex, ts = ts_notOrder, dataSize = dataSize, ivn =ivn, nlevels = nlevels, coef_list = coef_list, coef_length = coef_length))
 
 })
 
