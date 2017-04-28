@@ -1,48 +1,48 @@
-# context("DatGen_cpp")
-#
-# # set up input variables
-# edge_list <- vector("list", length = 5)
-# edge_list[[1]] <- integer(0)
-# edge_list[[2]] <- integer(0)
-# edge_list[[3]] <- 1
-# edge_list[[4]] <- c(1, 3)
-# edge_list[[5]] <- c(1, 2)
-# names(edge_list) <- c("V1", "V2", "V3", "V4", "V5")
-# nlevels <- c(3, 5, 2, 2, 3)
-# coef <- coef_gen(edge_list = sparsebnUtils::as.edgeList(edge_list), n_levels = nlevels)
-# ivn_list <- rep(1:5, rep(10, 5))
-# ivn_list <- as.list(ivn_list)
-# ivn_list <- lapply(ivn_list, function(x){paste0("V", x)})
-# dataSize <- length(ivn_list)
-#
-# maxdeg <- max(sapply(edge_list, length))
-# maxdeg <- as.integer(maxdeg)
-# node <- length(edge_list)
-# node<- as.integer(node)
-# ordex <- matrix(c(0, 0, 1, 1, 1, 0, 0, 0, 3, 2), ncol = 5, byrow = TRUE)
-# ordex <- as.integer(ordex)
-# ordex <- matrix(ordex, nrow = 2)
-# ts <- as.integer(1:5)
-# dataSize <- as.integer(dataSize)
-# ivn <- as.list(rep(1:5, rep(10, 5)))
-# ivn <- lapply(ivn, function(x){
-#   as.integer(x-1)})
-# nlevels <- as.integer(nlevels)
-# coef_list <- lapply(1:node, function(x, coef, edge_list, nlevels){
-#   out <- NULL
-#   if (length(edge_list[[x]])) {
-#     index <- rep(1:(length(edge_list[[x]])+1), c(1, nlevels[edge_list[[x]]]-1))
-#     m_to_list <- vector("list", length = length(edge_list[[x]])+1)
-#     for (i in 1:(length(edge_list[[x]])+1)) {
-#       m_to_list[[i]] <- coef[[x]][, index==i, drop = FALSE]
-#     }
-#     out = m_to_list
-#   }
-#   out
-# }, coef, edge_list, nlevels)
-# coef_length <- sapply(coef_list, length)
-# coef_length <- as.integer(coef_length)
-#
+context("DatGen_cpp")
+
+# set up input variables
+edge_list <- vector("list", length = 5)
+edge_list[[1]] <- integer(0)
+edge_list[[2]] <- integer(0)
+edge_list[[3]] <- 1
+edge_list[[4]] <- c(1, 3)
+edge_list[[5]] <- c(1, 2)
+names(edge_list) <- c("V1", "V2", "V3", "V4", "V5")
+nlevels <- c(3, 5, 2, 2, 3)
+coef <- coef_gen(edge_list = sparsebnUtils::as.edgeList(edge_list), n_levels = nlevels)
+ivn_list <- rep(1:5, rep(10, 5))
+ivn_list <- as.list(ivn_list)
+ivn_list <- lapply(ivn_list, function(x){paste0("V", x)})
+dataSize <- length(ivn_list)
+
+maxdeg <- max(sapply(edge_list, length))
+maxdeg <- as.integer(maxdeg)
+node <- length(edge_list)
+node<- as.integer(node)
+ordex <- matrix(c(0, 0, 1, 1, 1, 0, 0, 0, 3, 2), ncol = 5, byrow = TRUE)
+ordex <- as.integer(ordex)
+ordex <- matrix(ordex, nrow = 2)
+ts <- as.integer(1:5)
+dataSize <- as.integer(dataSize)
+ivn <- as.list(rep(1:5, rep(10, 5)))
+ivn <- lapply(ivn, function(x){
+  as.integer(x-1)})
+nlevels <- as.integer(nlevels)
+coef_list <- lapply(1:node, function(x, coef, edge_list, nlevels){
+  out <- NULL
+  if (length(edge_list[[x]])) {
+    index <- rep(1:(length(edge_list[[x]])+1), c(1, nlevels[edge_list[[x]]]-1))
+    m_to_list <- vector("list", length = length(edge_list[[x]])+1)
+    for (i in 1:(length(edge_list[[x]])+1)) {
+      m_to_list[[i]] <- coef[[x]][, index==i, drop = FALSE]
+    }
+    out = m_to_list
+  }
+  out
+}, coef, edge_list, nlevels)
+coef_length <- sapply(coef_list, length)
+coef_length <- as.integer(coef_length)
+
 # test_that("DatGen_cpp run as expected", {
 #   expect_error(DatGen_cpp(maxdeg = maxdeg, node = node, ordex = ordex, ts = ts, dataSize = dataSize, ivn =ivn, nlevels = nlevels, coef_list = coef_list, coef_length = coef_length), NA)
 # })

@@ -1,21 +1,21 @@
-# context("datGen_call")
-#
-# # set up input variables
-# edge_list <- vector("list", length = 5)
-# edge_list[[1]] <- integer(0)
-# edge_list[[2]] <- integer(0)
-# edge_list[[3]] <- 1
-# edge_list[[4]] <- c(1, 3)
-# edge_list[[5]] <- c(1, 2)
-# edge_list <- sparsebnUtils::as.edgeList(edge_list)
-# names(edge_list) <- c("V1", "V2", "V3", "V4", "V5")
-# nlevels <- c(3, 5, 2, 2, 3)
-# data_params <- coef_gen(edge_list = edge_list, n_levels = nlevels)
-# ivn_list <- rep(1:5, rep(10, 5))
-# ivn_list <- as.list(ivn_list)
-# ivn_list <- lapply(ivn_list, function(x){paste0("V", x)})
-# n_obs <- length(ivn_list)
-#
+context("datGen_call")
+
+# set up input variables
+edge_list <- vector("list", length = 5)
+edge_list[[1]] <- integer(0)
+edge_list[[2]] <- integer(0)
+edge_list[[3]] <- 1
+edge_list[[4]] <- c(1, 3)
+edge_list[[5]] <- c(1, 2)
+edge_list <- sparsebnUtils::as.edgeList(edge_list)
+names(edge_list) <- c("V1", "V2", "V3", "V4", "V5")
+nlevels <- c(3, 5, 2, 2, 3)
+data_params <- coef_gen(edge_list = edge_list, n_levels = nlevels)
+ivn_list <- rep(1:5, rep(10, 5))
+ivn_list <- as.list(ivn_list)
+ivn_list <- lapply(ivn_list, function(x){paste0("V", x)})
+n_obs <- length(ivn_list)
+
 # # test
 # test_that("datGen_call runs as expected", {
 #   expect_error(datGen_call(edge_list = edge_list, dataSize = n_obs, ivn = ivn_list, nlevels = nlevels, coef = data_params), NA)
