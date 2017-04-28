@@ -46,9 +46,8 @@ datGen_call <- function(edge_list,
   node <- length(edge_list)
   node<- as.integer(node)
 
-  ts = NULL
-  # ts <- as.integer(names(igraph::topo_sort(dag_igraph))) # for master brand
-  ts <- as.integer(as.vector(igraph::topo_sort(dag_igraph))) # for dev brand
+  ts <- match(node_name, names(igraph::topo_sort(dag_igraph))) # for master brand
+  # ts <- as.integer(as.vector(igraph::topo_sort(dag_igraph))) # for dev brand
 
   if (is.null(ts)) stop("Need topological sort for the graph!")
   if (length(ts) != node) stop("length of ts should be the same with node!")
