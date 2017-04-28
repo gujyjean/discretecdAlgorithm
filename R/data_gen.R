@@ -159,7 +159,7 @@ DatGen_cpp <- function(maxdeg,
   if(!is.vector(ts)) stop("ts must be a vector!")
   if(length(ts)!=node) stop("ts must have length node!")
   if(sum(!is.integer(ts))) stop("ts must be a vector of integer elements!")
-  if(sum(sort(ts)!=(1:node))) stop("ts is not a valid topological sort for node!")
+  if(sum(sort(ts, decreasing = FALSE)!=(1:node))) stop("ts is not a valid topological sort for node!")
 
   # check for dataSize
   if(!is.integer(dataSize)) stop("dataSize must be an integer!")
