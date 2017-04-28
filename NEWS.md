@@ -1,3 +1,13 @@
+# discretecdAlgorithm 0.0.4
+
+## Major changes
+
+* Added function to clean and transform factor data set. `cd.run()` function can now accept factor data set.
+
+## Bug fixes
+
+* Added check for missing level, and add data cleaning.
+
 # discretecdAlgorithm 0.0.3
 
 ## Major changes

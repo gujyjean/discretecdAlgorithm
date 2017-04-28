@@ -1,7 +1,7 @@
 ## Test environments
-* local OS X install, R 3.3.3
+* local OS X install, R 3.4.0
 * ubuntu 12.04.5 (travis-ci: oldrel, devel, and release)
-* win-builder (devel and release)
+* win-builder (release)
 
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
@@ -30,4 +30,4 @@ There was 1 note from travis-ci:
 This package imports from RcppEigen, and RcppEigen has installed size 27.0MB. Therefore this package can be relatively big.
 
 ## Reverse dependencies
-* sparsebn: I have tested current version of sparsebn on CRAN, there is no ERRORs, WARNINGs or NOTES. You will receive update for this package very soon from Bryon. I have also tested the latest developer's version and have run R CMD check, there is no ERRORs, WARNINGs, or NOTEs.
+* sparsebn: I have tested current version of sparsebn on CRAN, there is no ERRORs, WARNINGs or NOTES.
