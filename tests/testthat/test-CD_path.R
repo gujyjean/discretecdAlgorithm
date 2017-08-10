@@ -93,7 +93,7 @@ test_that("Check input: dataSize", {
   expect_error(CD_path(node, dataSize = as.integer(-10), data_matrix, n_levels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold, order))
 })
 
-test_that("Ckeck input: data_matrix", {
+test_that("Check input: data_matrix", {
   ### throw an error if the input data_matrix is not an integer matrix.
   data_num <- data_matrix+1
   data_num <- data_num-1
