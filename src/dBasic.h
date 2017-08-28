@@ -19,6 +19,6 @@ std::vector<int> seq(const int& from, const int& to);
 std::vector<int> degreeG(const int& maxdeg, const int& node, const int& nedge);
 gStruct GGen(const int& maxdeg, const int& node, const int& nedge);
 gStruct MCGen(const int& node);
-void DatGen(const Eigen::MatrixXi& ordex, const std::vector<int>& ts, const std::vector< std::vector<int> >& ivn, const Eigen::VectorXi& nlevels, Eigen::MatrixXi& data, const std::vector<VectorXMXd>& coef);
+void DatGen(const Eigen::MatrixXi& ordex, const std::vector<int>& ts, const std::vector< std::vector<int> >& ivn, const std::vector< std::vector<int> >& ivn_vals, bool ivn_rand, const Eigen::VectorXi& nlevels, Eigen::MatrixXi& data, const std::vector<VectorXMXd>& coef);
 void DatGen_obs(const Eigen::MatrixXi& ordex, const std::vector<int>& ts, int nobs, const Eigen::VectorXi nlevels, Eigen::MatrixXi& data, MatrixXVXi& levelIndex, double coef);
 #endif

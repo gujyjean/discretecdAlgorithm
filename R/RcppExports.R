@@ -9,7 +9,7 @@ lambdaMax <- function(node, dataSize, data, nlevels, obsIndex_R, weights, gamma,
     .Call('discretecdAlgorithm_lambdaMax', PACKAGE = 'discretecdAlgorithm', node, dataSize, data, nlevels, obsIndex_R, weights, gamma, upperbound)
 }
 
-DatGen <- function(maxdeg, node, ordex, ts, dataSize, ivn, coef_length, nlevels, coef) {
-    .Call('discretecdAlgorithm_DatGen', PACKAGE = 'discretecdAlgorithm', maxdeg, node, ordex, ts, dataSize, ivn, coef_length, nlevels, coef)
+DatGen <- function(maxdeg, node, ordex, ts, dataSize, ivn, ivn_vals, ivn_rand, coef_length, nlevels, coef) {
+    .Call('discretecdAlgorithm_DatGen', PACKAGE = 'discretecdAlgorithm', maxdeg, node, ordex, ts, dataSize, ivn, ivn_vals, ivn_rand, coef_length, nlevels, coef)
 }
 

@@ -5,8 +5,9 @@
 \title{cd.run}
 \usage{
 cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
-  error.tol = 1e-04, convLb = 0.01, weight.scale = 1, upperbound = 100,
-  alpha = 3, permute = FALSE, adaptive = FALSE)
+  whitelist = NULL, blacklist = NULL, error.tol = 1e-04, convLb = 0.01,
+  weight.scale = 1, upperbound = 100, alpha = 3, permute = FALSE,
+  adaptive = FALSE)
 }
 \arguments{
 \item{indata}{A sparsebnData object.}
@@ -23,6 +24,16 @@ For discrete network, the paper provided a way to calculate a maximum lambda tha
 See function \code{\link{max_lambda}} for details.}
 
 \item{lambdas.length}{Integer number of values to include in the solution path.}
+
+\item{whitelist}{A two-column matrix of edges that are guaranteed to be in each
+estimate (a "white list"). Each row in this matrix corresponds
+to an edge that is to be whitelisted. These edges can be
+specified by node name (as a \code{character} matrix), or by
+index (as a \code{numeric} matrix).}
+
+\item{blacklist}{A two-column matrix of edges that are guaranteed to be absent
+from each estimate (a "black list"). See argument
+"\code{whitelist}" above for more details.}
 
 \item{error.tol}{Error tolerance for the algorithm, used to test for convergence.}
 

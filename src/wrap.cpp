@@ -218,6 +218,8 @@ IntegerMatrix DatGen(int maxdeg,
                      IntegerVector ts,
                      int dataSize,
                      List ivn,
+                     List ivn_vals,
+                     bool ivn_rand,
                      IntegerVector coef_length,
                      Eigen::Map<Eigen::VectorXi> nlevels,
                      List coef)
@@ -242,6 +244,17 @@ IntegerMatrix DatGen(int maxdeg,
   for (int i=0; i<dataSize; i++) {
     for (int j=0; j<temp_ivn(i).size(); j++) {
       t_ivn[i].push_back(temp_ivn(i)(j));
+    }
+  }
+
+  VectorXVXi temp_ivn_vals(dataSize);
+  for (int i=0; i<dataSize; i++) {
+    temp_ivn_vals(i) = ivn_vals[i];
+  }
+  std::vector< std::vector<int> > t_ivn_vals(dataSize);
+  for (int i=0; i<dataSize; i++) {
+    for (int j=0; j<temp_ivn(i).size(); j++) {
+      t_ivn_vals[i].push_back(temp_ivn_vals(i)(j));
     }
   }
 
@@ -300,7 +313,7 @@ IntegerMatrix DatGen(int maxdeg,
 
 
   // run data generating function
-  DatGen(t_ordex, t_ts, t_ivn, t_nlevels, data, t_coef);
+  DatGen(t_ordex, t_ts, t_ivn, t_ivn_vals, ivn_rand, t_nlevels, data, t_coef);
 
   return wrap(data);
 }

@@ -70,3 +70,9 @@ dat_transform <- function(datbn) {
   data_matrix <- as.data.frame(sapply(1:ncol(data_matrix), function(x, data_matrix, min_levels){as.integer(data_matrix[, x]-min_levels[x])}, data_matrix, min_levels))
   return(data_matrix)
 }
+
+get_bwlist <- function(bwlist, node_index){
+  int_bwlist <- match(bwlist, node_index)
+  int_bwlist <- matrix(int_bwlist, ncol = 2)
+  return(int_bwlist)
+}
