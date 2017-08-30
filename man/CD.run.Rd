@@ -14,7 +14,7 @@ cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
 
 \item{weights}{Weight matrix. Weight can be the \code{l_2} norm of a consistent estimate of \code{beta_{j.i}}.
 See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.3 for more details.
-An improper weight matrix can damage the result and may even make the algorithm fail to converge.}
+A weight matrix that is set improperly may cause convergence issues and lead to a suboptimal solution.}
 
 \item{lambdas}{Numeric vector containing a grid of lambda values (i.e. regularization parameters)
 to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.

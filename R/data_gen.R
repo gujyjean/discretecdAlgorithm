@@ -2,12 +2,12 @@
 #'
 #' data generating function
 #'
-#' @param graph a \code{\link[sparsebnUtils]{edgeList}} object.
-#' @param params, coefficient list.
-#' @param n size of the data set, a scalar
-#' @param ivn, If \code{TRUE}, random N(0,1) values will be drawn for each intervention. Otherwise, these values need to supplied manually in \code{ivn}.
-#' @param ivn.rand If \code{TRUE}, random N(0,1) values will be drawn for each intervention. Otherwise, these values need to supplied manually in \code{ivn}.
-#' @param n_levels, a vector of number of levels for each node.
+#' @param graph A \code{\link[sparsebnUtils]{edgeList}} object.
+#' @param params Coefficient list.
+#' @param n Size of the data set, a scalar
+#' @param ivn List of interventions.
+#' @param ivn.rand If \code{TRUE}, random values will be drawn uniformly for each intervention. Otherwise, these values need to supplied manually in \code{ivn}.
+#' @param n_levels A vector of number of levels for each node. Default is binary data.
 #'
 #' @examples
 #'
@@ -29,7 +29,7 @@
 #'                                              params = gr.params,
 #'                                              ivn = ivn)
 #'
-#' ### Use pre-specified values for interventions
+#' ###  Use pre-specified values for interventions
 #' ###  In this toy example, we assume that all intervened nodes were fixed to
 #' ###  to the value 1, although this can be any number of course.
 #' ivn.vals <- lapply(ivn, function(x) sapply(x, function(x) 1)) # replace all entries with a 1

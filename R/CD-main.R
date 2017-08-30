@@ -33,7 +33,7 @@ NULL
 #' @param indata A sparsebnData object.
 #' @param weights Weight matrix. Weight can be the \code{l_2} norm of a consistent estimate of \code{beta_{j.i}}.
 #'                See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.3 for more details.
-#'                An improper weight matrix can damage the result and may even make the algorithm fail to converge.
+#'                A weight matrix that is set improperly may cause convergence issues and lead to a suboptimal solution.
 #' @param lambdas Numeric vector containing a grid of lambda values (i.e. regularization parameters)
 #'                to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
 #'                To generate a sequence of lambdas see \code{\link[sparsebnUtils]{generate.lambdas}}.
@@ -366,6 +366,7 @@ CD_call <- function(indata,
   for(k in seq_along(fit)){
     fit[[k]] <- append(fit[[k]], list(data_names), after = 1) # insert node names into second slot
     names(fit[[k]])[2] <- "nodes"
+    names(fit[[k]]$edges) <- data_names
   }
 
   # convert element of fit to sparsebnFit object
