@@ -67,6 +67,13 @@ lambda_call <- function(indata,
   if (length(data_ivn)!= nrow(data_matrix)) stop("length of ivn should be equals to number of observations!")
   node_index <- 0:ncol(data_matrix)
   data_level <- data$levels
+  data_names <- names(data$data)
+
+  for(i in 1:length(data_ivn)){
+    if(is.character(data_ivn[[i]])) {
+      data_ivn[[i]] = match(data_ivn[[i]], data_names)
+    }
+  }
 
   # Get the dimensions of the data matrix
   dataSize <- nrow(data_matrix)
