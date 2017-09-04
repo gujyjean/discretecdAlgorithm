@@ -1,6 +1,6 @@
 Package: discretecdAlgorithm
 Type: Package
-Title: Coordinate-Descent Algorithm for Discrete Data
+Title: Coordinate-Descent Algorithm for Learning Sparse Discrete Bayesian Networks
 Version: 0.0.5
 Authors@R: person("Jiaying", "Gu", email = "gujy.lola@gmail.com", role = c("aut", "cre"))
 Description: Structure learning of Bayesian network using coordinate-descent
