@@ -17,16 +17,29 @@ ivn_list <- lapply(ivn_list, function(x){paste0("V", x)})
 n_obs <- length(ivn_list)
 
 # # test
-# test_that("generate_discrete_data runs as expected", {
-#   expect_error(generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels), NA)
-#
-#   expect_error(generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn_list), NA)
-#
-# })
-#
-# test_that("Check output", {
-#   generated_data <- generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn_list)
-#   expect_equal(class(generated_data), "matrix")
-#   expect_equal(nrow(generated_data), n_obs)
-#   expect_equal(ncol(generated_data), length(edge_list))
-# })
+test_that("generate_discrete_data runs as expected", {
+  expect_error(generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels), NA)
+
+  expect_error(generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn_list), NA)
+
+})
+
+test_that("check set intervention value", {
+  ivn <- lapply(1:n_obs, function(x) names(edge_list)) # intervene on all nodes
+  ivn <- lapply(ivn, function(x) sapply(x, function(x) 1)) # all intervention values = 1
+  generated_data <- generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn, ivn.rand = FALSE)
+  expect_equal(as.vector(generated_data), rep(1, n_obs*length(edge_list))) # output is all ones
+
+  n_ivn <- 3
+  ivn <- lapply(1:n_obs, function(x) names(edge_list)[1:n_ivn]) # only intervene on first 3 nodes
+  ivn <- lapply(ivn, function(x) sapply(x, function(x) 1)) # all intervention values = 1
+  generated_data <- generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn, ivn.rand = FALSE)
+  expect_equal(as.vector(generated_data[, 1:n_ivn]), rep(1, n_obs*n_ivn))
+})
+
+test_that("Check output", {
+  generated_data <- generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn_list)
+  expect_equal(class(generated_data), "matrix")
+  expect_equal(nrow(generated_data), n_obs)
+  expect_equal(ncol(generated_data), length(edge_list))
+})

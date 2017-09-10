@@ -1338,7 +1338,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 
 	// compute the maximum lambda and sequence of lambdas
 	// initialize betaM
-	double lambdaMax = 0.0;
+	// double lambdaMax = 0.0;
 	VectorXMXd logitM(node);
 	MatrixXb IsBetaZeros(node, node);
 	for (int j = 0; j < node; ++j)
@@ -1365,7 +1365,7 @@ void CDAlgo(int node, int dataSize, const MatrixXi& data, const VectorXi& nlevel
 					cInd = nzIndt(it1, 1);
 					grad.row(cInd) +=  yMp.row(rInd) * dmt(rInd, cInd);
 				}
-				lambdaMax = max(lambdaMax, grad.norm()/penalties(i, j));
+				// lambdaMax = max(lambdaMax, grad.norm()/penalties(i, j));
 			}
 		}
 		/*  begin initializing intercepts  */

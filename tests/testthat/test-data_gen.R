@@ -16,37 +16,37 @@ ivn_list <- as.list(ivn_list)
 ivn_list <- lapply(ivn_list, function(x){paste0("V", x)})
 n_obs <- length(ivn_list)
 
-# # test
-# test_that("data_gen run as expected", {
-#   ### data_gen run with default settings
-#   expect_error(data_gen(graph = edge_list, n = n_obs), NA)
-#
-#   ### data_gen run with manual settings
-#   expect_error(data_gen(graph = edge_list, n = n_obs, ivn = ivn_list, n_levels = nlevels, params = data_params, FUN = unif, flip = TRUE), NA)
-# })
-#
-# test_that("check input graph", {
-#   graph_list <- as.list(edge_list)
-#   expect_error(data_gen(graph = graph_list, n = n_obs))
-#
-# })
-#
-# test_that("check input n", {
-#   n_neg <- -1
-#   expect_error(data_gen(graph = edge_list, n = n_neg))
-#
-# })
-#
-# test_that("check input n_levels", {
-#   n_levels_wrong <- nlevels
-#   n_levels_wrong[1] <- 1
-#   expect_error(data_gen(graph = edge_list, n = n_obs, n_levels = n_levels_wrong))
-#
-# })
-#
-# test_that("Check output", {
-#   generated_data <- data_gen(graph = edge_list, n = n_obs)
-#   expect_equal(class(generated_data), "matrix")
-#   expect_equal(nrow(generated_data), n_obs)
-#   expect_equal(ncol(generated_data), length(edge_list))
-# })
+# test
+test_that("data_gen run as expected", {
+  ### data_gen run with default settings
+  expect_error(data_gen(graph = edge_list, n = n_obs), NA)
+
+  ### data_gen run with manual settings
+  expect_error(data_gen(graph = edge_list, n = n_obs, ivn = ivn_list, n_levels = nlevels, params = data_params, FUN = unif, flip = TRUE), NA)
+})
+
+test_that("check input graph", {
+  graph_list <- as.list(edge_list)
+  expect_error(data_gen(graph = graph_list, n = n_obs))
+
+})
+
+test_that("check input n", {
+  n_neg <- -1
+  expect_error(data_gen(graph = edge_list, n = n_neg))
+
+})
+
+test_that("check input n_levels", {
+  n_levels_wrong <- nlevels
+  n_levels_wrong[1] <- 1
+  expect_error(data_gen(graph = edge_list, n = n_obs, n_levels = n_levels_wrong))
+
+})
+
+test_that("Check output", {
+  generated_data <- data_gen(graph = edge_list, n = n_obs)
+  expect_equal(class(generated_data), "matrix")
+  expect_equal(nrow(generated_data), n_obs)
+  expect_equal(ncol(generated_data), length(edge_list))
+})

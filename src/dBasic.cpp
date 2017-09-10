@@ -381,7 +381,7 @@ bool ifIntervene(int node, vector<int> subIvn)
 // nlevels, number of levels for each node
 // data, data set that need to be generated
 // coef,
-void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<int> >& ivn, const VectorXi& nlevels, MatrixXi& data, const vector<VectorXMXd>& coef)
+void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<int> >& ivn, const vector< vector<int> >& ivn_vals, const bool ivn_rand, const VectorXi& nlevels, MatrixXi& data, const vector<VectorXMXd>& coef)
 {
 
   int node = ordex.cols(), maxdeg = ordex.rows();
@@ -394,11 +394,21 @@ void DatGen(const MatrixXi& ordex, const vector<int>& ts, const vector< vector<i
 
   int dataSize = ivn.size(), cur, pa;// counter -> i, cur -> j
   vector< vector<int> > fX(dataSize);
-  for (int it1=0; it1 < dataSize; ++it1)
-  {
-    for (int it2=0; it2<ivn[it1].size(); ++it2) {
-      if (ivn[it1][it2] != -1)
-        fX[it1].push_back(SampleNoReplace(levels[ivn[it1][it2]], 1)[0]);
+  if (!ivn_rand) {
+    for (int it1=0; it1 < dataSize; ++it1)
+    {
+      for (int it2=0; it2<ivn_vals[it1].size(); ++it2) {
+        fX[it1].push_back(ivn_vals[it1][it2]);
+      }
+    }
+  }
+  else {
+    for (int it1=0; it1 < dataSize; ++it1)
+    {
+      for (int it2=0; it2<ivn[it1].size(); ++it2) {
+        if (ivn[it1][it2] != -1)
+          fX[it1].push_back(SampleNoReplace(levels[ivn[it1][it2]], 1)[0]);
+      }
     }
   }
 

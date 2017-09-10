@@ -2,22 +2,57 @@
 #'
 #' data generating function
 #'
-#' @param graph a \code{\link[sparsebnUtils]{edgeList}} object.
-#' @param params, coefficient list.
-#' @param n size of the data set, a scaler
-#' @param ivn, a list of intervention for each data point.
-#' @param n_levels, a vector of number of levels for each node.
+#' @param graph A \code{\link[sparsebnUtils]{edgeList}} object.
+#' @param params Coefficient list.
+#' @param n Size of the data set, a scalar
+#' @param ivn List of interventions.
+#' @param ivn.rand If \code{TRUE}, random values will be drawn uniformly for each intervention. Otherwise, these values need to supplied manually in \code{ivn}.
+#' @param n_levels A vector of number of levels for each node. Default is binary data.
+#'
+#' @examples
+#'
+#' ### generate observational data
+#' gr <- sparsebnUtils::random.graph(5, 5) # use sparsebnUtils package to generate a random graph
+#' names(gr) = c("V1", "V2", "V3", "V4", "V5")
+#' nlevels <- c(3, 5, 2, 2, 3)
+#' gr.params <- coef_gen(edge_list = gr, n_levels = nlevels)
+#' data.obs <- discretecdAlgorithm::generate_discrete_data(graph = gr,
+#'                                                         n = 100,
+#'                                                         n_levels = nlevels,
+#'                                                         params = gr.params)
+#'
+#' ### generate experimental data
+#' ivn <- as.list(c(rep("V1", 50), rep("V2", 50))) # 50 interventions on V1, 50 interventions on V2
+#' data.ivn <- discretecdAlgorithm::generate_discrete_data(graph = gr,
+#'                                              n = 100,
+#'                                              n_levels = nlevels,
+#'                                              params = gr.params,
+#'                                              ivn = ivn)
+#'
+#' ###  Use pre-specified values for interventions
+#' ###  In this toy example, we assume that all intervened nodes were fixed to
+#' ###  to the value 1, although this can be any number of course.
+#' ivn.vals <- lapply(ivn, function(x) sapply(x, function(x) 1)) # replace all entries with a 1
+#' data.ivn <- discretecdAlgorithm::generate_discrete_data(graph = gr,
+#'                                              n = 100,
+#'                                              n_levels = nlevels,
+#'                                              params = gr.params,
+#'                                              ivn = ivn.vals,
+#'                                              ivn.rand = FALSE)
+#'
 #' @return data matrix
 #' @export
 generate_discrete_data <- function(graph,
                                    params,
                                    n,
                                    ivn = NULL,
+                                   ivn.rand = TRUE,
                                    n_levels = NULL)
 {
   datGen_call(edge_list = graph,
               dataSize = n,
               ivn = ivn,
+              ivn_rand = ivn.rand,
               nlevels = n_levels,
               coef = params)
 }
@@ -25,6 +60,7 @@ generate_discrete_data <- function(graph,
 datGen_call <- function(edge_list,
                         dataSize,
                         ivn,
+                        ivn_rand,
                         nlevels,
                         coef)
 {
@@ -61,13 +97,45 @@ datGen_call <- function(edge_list,
   if(dataSize < 1) stop("data_size must be a positive integer!")
   dataSize <- as.integer(dataSize)
 
+  if (is.null(nlevels)) {
+    nlevels <- rep(2, node)
+  }
+  if(!is.vector(nlevels)) stop("n_levels must be a vector!")
+  if(sum(nlevels<2)) stop("number of levels must be at least 2!")
+  if(length(nlevels)!=node) stop("length of n_levels not compatible with edge_list!")
+  nlevels <- as.integer(nlevels)
+
+  ivn_vals <- as.list(rep(0, dataSize))
+
   if (is.null(ivn)) {
     ivn <- as.list(rep(0, dataSize))
   }
   else {
     if(!is.list(ivn)) stop("ivn must be a list!")
-    if (sum(sapply(ivn, function(x){!is.character(x)}))) stop("ivn must be a list of strings, or NA")
-    ivn <- lapply(ivn, function(x) match(x, node_name))
+    if(ivn_rand) {
+      if (sum(sapply(ivn, function(x){!is.character(x)})) && sum(sapply(ivn, function(x){!is.integer(x)}))) stop("ivn must be a list of all characters or all integers, or NA")
+      if (sum(sapply(ivn, function(x){is.character(x)}))) {
+        ivn <- lapply(ivn, function(x) match(x, node_name))
+      }
+    }
+    else {
+      check_vals <- sparsebnUtils::check_list_class(ivn, c("NULL", "numeric")) # check to make sure list components are either numeric (ivn vals) or NULL (obs sample)
+      check_names <- sapply(ivn, function(x) is.null(names(x))) # return TRUE if component has no names attribute (i.e. it is NULL)
+
+      if(!check_vals || all(check_names)){
+        err_msg <- paste0("ivn.rand set to FALSE with invalid input for ivn: ",
+                          "If ivn.rand = FALSE, you must pass explicit values ",
+                          "for each intervention used in your experiments. ",
+                          "Please check that the ivn argument is a list whose ",
+                          "arguments are named numeric vectors whose names ",
+                          "correspond to the node under intervention or NULL ",
+                          "if the corresponding row is observational.")
+        stop(err_msg)
+      }
+      ivn_vals <- lapply(ivn, as.integer)
+      ivn <- lapply(ivn, function(x){names(x)})
+      ivn <- lapply(ivn, function(x) match(x, node_name))
+    }
   }
   if(length(ivn)!=dataSize) stop("length of ivn not compatible with data_size")
   ivn <- lapply(ivn, function(x){
@@ -75,15 +143,6 @@ datGen_call <- function(edge_list,
       x <- 0
     }
     as.integer(x-1)})
-
-  if (is.null(nlevels)) {
-    nlevels <- rep(2, node)
-  }
-  # if (is.null(nlevels)) stop("nlevels must can not be a NULL value")
-  if(!is.vector(nlevels)) stop("n_levels must be a vector!")
-  if(sum(nlevels<2)) stop("number of levels must be at least 2!")
-  if(length(nlevels)!=node) stop("length of n_levels not compatible with edge_list!")
-  nlevels <- as.integer(nlevels)
 
   # if(is.null(coef)) stop("coef must have some value!")
   if(!is.list(coef)) stop("coef must be a list!")
@@ -124,7 +183,7 @@ datGen_call <- function(edge_list,
   coef_length <- as.integer(coef_length)
 
   # call DatGen_cpp
-  DatGen_cpp(maxdeg, node, ordex, ts, dataSize, ivn, nlevels, coef_list, coef_length)
+  DatGen_cpp(maxdeg, node, ordex, ts, dataSize, ivn, ivn_vals, ivn_rand, nlevels, coef_list, coef_length)
 }
 
 
@@ -137,6 +196,8 @@ DatGen_cpp <- function(maxdeg,
                    ts,
                    dataSize,
                    ivn,
+                   ivn_vals,
+                   ivn_rand,
                    nlevels,
                    coef_list,
                    coef_length)
@@ -207,7 +268,7 @@ DatGen_cpp <- function(maxdeg,
   if (!is.integer(coef_length)) stop("coef_length must be an integer!")
 
   # call function from cpp
-  DatGen(maxdeg, node, ordex, ts, dataSize, ivn, coef_length, nlevels, coef_list)
+  DatGen(maxdeg, node, ordex, ts, dataSize, ivn, ivn_vals, ivn_rand, coef_length, nlevels, coef_list)
 }
 
 #' coef_gen

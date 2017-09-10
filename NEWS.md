@@ -1,3 +1,15 @@
+# discretecdAlgorithm 0.0.5
+
+## Major changes
+
+* Added black and white list. `cd.run()` can now take attribute `whitelist` and `blacklist`.
+
+* Added option for users to specify value of intervention in `generate_discrete_data()` function. 
+
+### Bug fixes
+
+* `cd.run()` can now correctly take a list of intervention, whose element is node names.
+
 # discretecdAlgorithm 0.0.4
 
 ## Major changes

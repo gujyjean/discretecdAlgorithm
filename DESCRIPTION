@@ -1,12 +1,12 @@
 Package: discretecdAlgorithm
 Type: Package
-Title: Coordinate-Descent Algorithm for Discrete Data
-Version: 0.0.4
+Title: Coordinate-Descent Algorithm for Learning Sparse Discrete Bayesian Networks
+Version: 0.0.5
 Authors@R: person("Jiaying", "Gu", email = "gujy.lola@gmail.com", role = c("aut", "cre"))
 Description: Structure learning of Bayesian network using coordinate-descent
     algorithm. This algorithm is designed for discrete network assuming a multinomial data set,
     and we use a multi-logit model to do the regression.
-    The algorithm is described in Gu, Fu and Zhou (2016) <http://arxiv.org/abs/1403.2310>.
+    The algorithm is described in Gu, Fu and Zhou (2016) <arxiv:1403.2310>.
 License: GPL (>= 2)
 LazyData: TRUE
 Depends:

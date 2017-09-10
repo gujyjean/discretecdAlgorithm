@@ -51,8 +51,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // DatGen
-IntegerMatrix DatGen(int maxdeg, int node, Eigen::Map<Eigen::MatrixXi> ordex, IntegerVector ts, int dataSize, List ivn, IntegerVector coef_length, Eigen::Map<Eigen::VectorXi> nlevels, List coef);
-RcppExport SEXP discretecdAlgorithm_DatGen(SEXP maxdegSEXP, SEXP nodeSEXP, SEXP ordexSEXP, SEXP tsSEXP, SEXP dataSizeSEXP, SEXP ivnSEXP, SEXP coef_lengthSEXP, SEXP nlevelsSEXP, SEXP coefSEXP) {
+IntegerMatrix DatGen(int maxdeg, int node, Eigen::Map<Eigen::MatrixXi> ordex, IntegerVector ts, int dataSize, List ivn, List ivn_vals, bool ivn_rand, IntegerVector coef_length, Eigen::Map<Eigen::VectorXi> nlevels, List coef);
+RcppExport SEXP discretecdAlgorithm_DatGen(SEXP maxdegSEXP, SEXP nodeSEXP, SEXP ordexSEXP, SEXP tsSEXP, SEXP dataSizeSEXP, SEXP ivnSEXP, SEXP ivn_valsSEXP, SEXP ivn_randSEXP, SEXP coef_lengthSEXP, SEXP nlevelsSEXP, SEXP coefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -62,10 +62,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type ts(tsSEXP);
     Rcpp::traits::input_parameter< int >::type dataSize(dataSizeSEXP);
     Rcpp::traits::input_parameter< List >::type ivn(ivnSEXP);
+    Rcpp::traits::input_parameter< List >::type ivn_vals(ivn_valsSEXP);
+    Rcpp::traits::input_parameter< bool >::type ivn_rand(ivn_randSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type coef_length(coef_lengthSEXP);
     Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXi> >::type nlevels(nlevelsSEXP);
     Rcpp::traits::input_parameter< List >::type coef(coefSEXP);
-    rcpp_result_gen = Rcpp::wrap(DatGen(maxdeg, node, ordex, ts, dataSize, ivn, coef_length, nlevels, coef));
+    rcpp_result_gen = Rcpp::wrap(DatGen(maxdeg, node, ordex, ts, dataSize, ivn, ivn_vals, ivn_rand, coef_length, nlevels, coef));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -32,25 +32,33 @@ NULL
 #'
 #' @param indata A sparsebnData object.
 #' @param weights Weight matrix. Weight can be the \code{l_2} norm of a consistent estimate of \code{beta_{j.i}}.
-#'        See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.3 for more details.
-#'        An improper weight matrix can damage the result and may even make the algorithm fail to converge.
+#'                See paper \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.3 for more details.
+#'                A weight matrix that is set improperly may cause convergence issues and lead to a suboptimal solution.
 #' @param lambdas Numeric vector containing a grid of lambda values (i.e. regularization parameters)
-#'        to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
-#'        To generate a sequence of lambdas see \code{\link[sparsebnUtils]{generate.lambdas}}.
-#'        For discrete network, the paper provided a way to calculate a maximum lambda that penalizes all parameters to zero,
-#'        \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.4.
-#'        See function \code{\link{max_lambda}} for details.
+#'                to use in the solution path. If missing, a default grid of values will be used based on a decreasing log-scale.
+#'                To generate a sequence of lambdas see \code{\link[sparsebnUtils]{generate.lambdas}}.
+#'                For discrete network, the paper provided a way to calculate a maximum lambda that penalizes all parameters to zero,
+#'                \href{http://arxiv.org/abs/1403.2310}{Gu et al. (2016)} chapter 3.4.
+#'                See function \code{\link{max_lambda}} for details.
 #' @param lambdas.length Integer number of values to include in the solution path.
+#' @param whitelist A two-column matrix of edges that are guaranteed to be in each
+#'                  estimate (a "white list"). Each row in this matrix corresponds
+#'                  to an edge that is to be whitelisted. These edges can be
+#'                  specified by node name (as a \code{character} matrix), or by
+#'                  index (as a \code{numeric} matrix).
+#' @param blacklist A two-column matrix of edges that are guaranteed to be absent
+#'                  from each estimate (a "black list"). See argument
+#'                  "\code{whitelist}" above for more details.
 #' @param error.tol Error tolerance for the algorithm, used to test for convergence.
 #' @param convLb Small positive number used in Hessian approximation.
 #' @param weight.scale A postitive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights.
-#'        A -1 value indicates that there is no truncation.
+#'                   A -1 value indicates that there is no truncation.
 #' @param alpha Threshold parameter used to terminate the algorithm whenever the number of edges in the
 #'              current DAG estimate is \code{> alpha * ncol(data)}.
 #' @param permute A bool parameter, default value is FALSE. If TRUE, will randomize order of going through blocks.
 #' @param adaptive A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
-#'        If TRUE, an adaptive lasso algorithm will be run.
+#'                 If TRUE, an adaptive lasso algorithm will be run.
 #' @return A \code{\link[sparsebnUtils]{sparsebnPath}} object.
 #'         The CD Algorithm will be stoped if the number of edges exceeds 3 times of number of variables.
 #' @examples
@@ -92,6 +100,8 @@ cd.run <- function(indata,
                    weights=NULL,
                    lambdas=NULL,
                    lambdas.length=30,
+                   whitelist = NULL,
+                   blacklist = NULL,
                    error.tol=0.0001,
                    convLb=0.01,
                    weight.scale=1.0,
@@ -106,6 +116,8 @@ cd.run <- function(indata,
                   lambda_seq = lambdas,
                   fmlam = 0.01,
                   nlam = lambdas.length,
+                  whitelist = whitelist,
+                  blacklist = blacklist,
                   eps = error.tol,
                   convLb = convLb,
                   qtol = error.tol,
@@ -123,6 +135,8 @@ cd_adaptive_run <- function(indata,
                             lambda_seq,
                             fmlam,
                             nlam,
+                            whitelist,
+                            blacklist,
                             eps,
                             convLb,
                             qtol,
@@ -133,12 +147,12 @@ cd_adaptive_run <- function(indata,
                             adaptive)
 {
   if (adaptive == FALSE) {
-    return(CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
+    return(CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, whitelist, blacklist, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
   }
   else {
-    cd_call_out <- CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)
+    cd_call_out <- CD_call(indata, eor, permute, weights, lambda_seq, fmlam, nlam, whitelist, blacklist, eps, convLb, qtol, gamma, upperbound, threshold)
     adaptive_weights <- cd_call_out$adaptive_weights
-    return(CD_call(indata, eor, permute, adaptive_weights, lambda_seq = NULL, fmlam, nlam, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
+    return(CD_call(indata, eor, permute, adaptive_weights, lambda_seq = NULL, fmlam, nlam, whitelist, blacklist, eps, convLb, qtol, gamma, upperbound, threshold)$fit)
   }
 }
 
@@ -150,6 +164,8 @@ CD_call <- function(indata,
                     lambda_seq,
                     fmlam,
                     nlam,
+                    whitelist,
+                    blacklist,
                     eps,
                     convLb,
                     qtol,
@@ -183,9 +199,16 @@ CD_call <- function(indata,
     data_ivn <- as.list(rep(0L, nrow(data_matrix)))
   }
   if (length(data_ivn)!= nrow(data_matrix)) stop("length of ivn should be equals to number of observations!")
+
   node_index <- 0:ncol(data_matrix)
   data_level <- data$levels
   data_names <- names(data$data)
+
+  for(i in 1:length(data_ivn)){
+    if(is.character(data_ivn[[i]])) {
+      data_ivn[[i]] = match(data_ivn[[i]], data_names)
+    }
+  }
 
   # Get the dimensions of the data matrix
   dataSize <- nrow(data_matrix)
@@ -237,8 +260,7 @@ CD_call <- function(indata,
     weights <- matrix(1, node, node)
   }
   if(ncol(weights)!=nrow(weights)) stop("weights should be a square matrix!")
-  if(ncol(weights)!=node) stop("wrong dimension for weights, number of colmn of weight matrix should be node")
-  weights <- matrix(as.numeric(weights), ncol = node)
+  if(ncol(weights)!=node) stop("wrong dimension for weights, number of colmn of weight matrix should be node!")
 
   # type conversion for tunning parameters
   node = as.integer(node)
@@ -264,6 +286,53 @@ CD_call <- function(indata,
   lambda_seq <- as.numeric(lambda_seq)
   # fmlam = as.numeric(fmlam)
   nlam = as.integer(nlam)
+
+  # white list should be calculated after lambda sequence is generated
+  if(!is.null(whitelist)) {
+    if(!is.matrix(whitelist) || ncol(whitelist) != 2){
+      stop("whitelist must be a matrix with exactly 2 columns!")
+    }
+    if(any(is.na(whitelist))){
+      stop("whitelist cannot have missing values!")
+    }
+    if(!(all(is.numeric(whitelist))||all(is.character(whitelist)))) {
+      stop("whitelis must be a list of all integers or characters!")
+    }
+    if(all(is.character(whitelist))){
+      whitelist <- get_bwlist(whitelist, data_names)
+    }
+    for(i in 1:nrow(whitelist)) {
+      weights[whitelist[i, 1], whitelist[i, 2]] = 0.0
+    }
+  }
+
+  if(!is.null(blacklist)) {
+    if(!is.matrix(blacklist) || ncol(blacklist) != 2){
+      stop("blacklist must be a matrix with exactly 2 columns!")
+    }
+    if(any(is.na(blacklist))){
+      stop("blacklist cannot have missing values!")
+    }
+    if(!(all(is.numeric(blacklist))||all(is.character(blacklist)))) {
+      stop("blacklist must be a list of all integers or characters!")
+    }
+    if(all(is.character(blacklist))){
+      blacklist <- get_bwlist(blacklist, data_names)
+    }
+    for(i in 1:nrow(blacklist)) {
+      weights[blacklist[i, 1], blacklist[i, 2]] = upperbound
+    }
+  }
+
+  # check white and black list
+  # check white and black list do not have overlap
+  if(!is.null(whitelist) && !is.null(blacklist)) {
+    for(i in 1:nrow(whitelist)) {
+      if(sum(apply(blacklist, 1, function(x, w_row) {identical(w_row, x)}, whitelist[i, ]))) stop("blacklist and whitelist cannot have common edges!")
+    }
+  }
+
+  weights <- matrix(as.numeric(weights), ncol = node)
 
   # run CD algorithm
   estimate <- CD_path(node,
@@ -304,6 +373,7 @@ CD_call <- function(indata,
   for(k in seq_along(fit)){
     fit[[k]] <- append(fit[[k]], list(data_names), after = 1) # insert node names into second slot
     names(fit[[k]])[2] <- "nodes"
+    names(fit[[k]]$edges) <- data_names
   }
 
   # convert element of fit to sparsebnFit object
