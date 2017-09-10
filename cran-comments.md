@@ -12,20 +12,15 @@ There was 1 note from win-builder:
 Maintainer: 'Jiaying Gu <gujy.lola@gmail.com>'
 
 Possibly mis-spelled words in DESCRIPTION:
-  Fu (9:39)
-  Gu (9:35)
-  Zhou (9:46)
-  logit (8:24)
-  multi (8:18)
-  multinomial (7:75)
+  arxiv (10:59)
 
-Fu, Gu, Zhou are all last names of authors of the paper referenced in this package. logit, multi, and multinomial are all technical terms.
+arxiv is the name for preprints website.
   
 There was 1 note from travis-ci:
 * checking installed package size ... NOTE
-  installed size is  9.4Mb
+  installed size is  9.6Mb
   sub-directories of 1Mb or more:
-    libs   9.3Mb
+    libs   9.5Mb
     
 This package imports from RcppEigen, and RcppEigen has installed size 27.0MB. Therefore this package can be relatively big.
 
