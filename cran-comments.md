@@ -5,16 +5,6 @@
 
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
-
-There was 1 note from win-builder:
-
-* checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Jiaying Gu <gujy.lola@gmail.com>'
-
-Possibly mis-spelled words in DESCRIPTION:
-  arxiv (10:59)
-
-arxiv is the name for preprints website.
   
 There was 1 note from travis-ci:
 * checking installed package size ... NOTE
