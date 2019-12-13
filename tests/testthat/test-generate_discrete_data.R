@@ -39,7 +39,7 @@ test_that("check set intervention value", {
 
 test_that("Check output", {
   generated_data <- generate_discrete_data(graph = edge_list, params = data_params, n = n_obs, n_levels = nlevels, ivn = ivn_list)
-  expect_equal(class(generated_data), "matrix")
+  expect_true("matrix" %in% class(generated_data))
   expect_equal(nrow(generated_data), n_obs)
   expect_equal(ncol(generated_data), length(edge_list))
 })

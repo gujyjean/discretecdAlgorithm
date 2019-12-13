@@ -4,8 +4,14 @@
 \alias{generate_discrete_data}
 \title{generate_discrete_data}
 \usage{
-generate_discrete_data(graph, params, n, ivn = NULL, ivn.rand = TRUE,
-  n_levels = NULL)
+generate_discrete_data(
+  graph,
+  params,
+  n,
+  ivn = NULL,
+  ivn.rand = TRUE,
+  n_levels = NULL
+)
 }
 \arguments{
 \item{graph}{A \code{\link[sparsebnUtils]{edgeList}} object.}

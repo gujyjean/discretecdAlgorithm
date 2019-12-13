@@ -46,7 +46,7 @@ test_that("check input n_levels", {
 
 test_that("Check output", {
   generated_data <- data_gen(graph = edge_list, n = n_obs)
-  expect_equal(class(generated_data), "matrix")
+  expect_true("matrix" %in% class(generated_data))
   expect_equal(nrow(generated_data), n_obs)
   expect_equal(ncol(generated_data), length(edge_list))
 })

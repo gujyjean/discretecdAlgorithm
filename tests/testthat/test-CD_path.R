@@ -264,7 +264,7 @@ test_that("Check output", {
   ### output is a list of length 2
   fit <- CD_path(node, dataSize, data_matrix, n_levels, obsIndex_R, eor_nr, eor, lambda_seq, nlam, eps, convLb, qtol, weights, gamma, upperbound, threshold)
   expect_equal(length(fit), 3)
-  expect_equal(class(fit[[1]]), "matrix")
+  expect_true("matrix" %in% class(fit[[1]]))
   expect_equal(class(fit[[2]]), "numeric")
-  expect_equal(class(fit[[3]]), "matrix")
+  expect_true("matrix" %in% class(fit[[3]]))
 })

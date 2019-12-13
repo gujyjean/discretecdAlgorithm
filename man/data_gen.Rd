@@ -4,8 +4,15 @@
 \alias{data_gen}
 \title{data_gen}
 \usage{
-data_gen(graph, n, ivn = NULL, n_levels = NULL, params = NULL,
-  FUN = NULL, flip = TRUE)
+data_gen(
+  graph,
+  n,
+  ivn = NULL,
+  n_levels = NULL,
+  params = NULL,
+  FUN = NULL,
+  flip = TRUE
+)
 }
 \arguments{
 \item{graph}{a \code{\link[sparsebnUtils]{edgeList}} object.}

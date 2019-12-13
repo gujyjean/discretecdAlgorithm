@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // CD
 List CD(int node, int dataSize, Eigen::Map<Eigen::MatrixXi> data, Eigen::Map<Eigen::VectorXi> nlevels, List obsIndex_R, int eor_nr, Eigen::Map<Eigen::MatrixXi> eor, Eigen::Map<Eigen::VectorXd> lambda_seq, int nlam, double eps, double convLb, double qtol, Eigen::Map<Eigen::MatrixXd> weights, double gamma, double upperbound, int threshold);
-RcppExport SEXP discretecdAlgorithm_CD(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP eor_nrSEXP, SEXP eorSEXP, SEXP lambda_seqSEXP, SEXP nlamSEXP, SEXP epsSEXP, SEXP convLbSEXP, SEXP qtolSEXP, SEXP weightsSEXP, SEXP gammaSEXP, SEXP upperboundSEXP, SEXP thresholdSEXP) {
+RcppExport SEXP _discretecdAlgorithm_CD(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP eor_nrSEXP, SEXP eorSEXP, SEXP lambda_seqSEXP, SEXP nlamSEXP, SEXP epsSEXP, SEXP convLbSEXP, SEXP qtolSEXP, SEXP weightsSEXP, SEXP gammaSEXP, SEXP upperboundSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,7 +34,7 @@ END_RCPP
 }
 // lambdaMax
 double lambdaMax(int node, int dataSize, Eigen::Map<Eigen::MatrixXi> data, Eigen::Map<Eigen::VectorXi> nlevels, List obsIndex_R, Eigen::Map<Eigen::MatrixXd> weights, double gamma, double upperbound);
-RcppExport SEXP discretecdAlgorithm_lambdaMax(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP weightsSEXP, SEXP gammaSEXP, SEXP upperboundSEXP) {
+RcppExport SEXP _discretecdAlgorithm_lambdaMax(SEXP nodeSEXP, SEXP dataSizeSEXP, SEXP dataSEXP, SEXP nlevelsSEXP, SEXP obsIndex_RSEXP, SEXP weightsSEXP, SEXP gammaSEXP, SEXP upperboundSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,7 @@ END_RCPP
 }
 // DatGen
 IntegerMatrix DatGen(int maxdeg, int node, Eigen::Map<Eigen::MatrixXi> ordex, IntegerVector ts, int dataSize, List ivn, List ivn_vals, bool ivn_rand, IntegerVector coef_length, Eigen::Map<Eigen::VectorXi> nlevels, List coef);
-RcppExport SEXP discretecdAlgorithm_DatGen(SEXP maxdegSEXP, SEXP nodeSEXP, SEXP ordexSEXP, SEXP tsSEXP, SEXP dataSizeSEXP, SEXP ivnSEXP, SEXP ivn_valsSEXP, SEXP ivn_randSEXP, SEXP coef_lengthSEXP, SEXP nlevelsSEXP, SEXP coefSEXP) {
+RcppExport SEXP _discretecdAlgorithm_DatGen(SEXP maxdegSEXP, SEXP nodeSEXP, SEXP ordexSEXP, SEXP tsSEXP, SEXP dataSizeSEXP, SEXP ivnSEXP, SEXP ivn_valsSEXP, SEXP ivn_randSEXP, SEXP coef_lengthSEXP, SEXP nlevelsSEXP, SEXP coefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -70,4 +70,16 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(DatGen(maxdeg, node, ordex, ts, dataSize, ivn, ivn_vals, ivn_rand, coef_length, nlevels, coef));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_discretecdAlgorithm_CD", (DL_FUNC) &_discretecdAlgorithm_CD, 16},
+    {"_discretecdAlgorithm_lambdaMax", (DL_FUNC) &_discretecdAlgorithm_lambdaMax, 8},
+    {"_discretecdAlgorithm_DatGen", (DL_FUNC) &_discretecdAlgorithm_DatGen, 11},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_discretecdAlgorithm(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

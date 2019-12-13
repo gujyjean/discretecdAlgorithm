@@ -4,10 +4,21 @@
 \alias{cd.run}
 \title{cd.run}
 \usage{
-cd.run(indata, weights = NULL, lambdas = NULL, lambdas.length = 30,
-  whitelist = NULL, blacklist = NULL, error.tol = 1e-04, convLb = 0.01,
-  weight.scale = 1, upperbound = 100, alpha = 3, permute = FALSE,
-  adaptive = FALSE)
+cd.run(
+  indata,
+  weights = NULL,
+  lambdas = NULL,
+  lambdas.length = 30,
+  whitelist = NULL,
+  blacklist = NULL,
+  error.tol = 1e-04,
+  convLb = 0.01,
+  weight.scale = 1,
+  upperbound = 100,
+  alpha = 3,
+  permute = FALSE,
+  adaptive = FALSE
+)
 }
 \arguments{
 \item{indata}{A sparsebnData object.}
