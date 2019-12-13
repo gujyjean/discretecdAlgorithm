@@ -11,7 +11,7 @@ coef_gen(edge_list, n_levels = NULL, FUN = NULL, flip = TRUE)
 
 \item{n_levels, }{a list of number of levels for each node.}
 
-\item{FUN, }{a probability distrubution to generate coefficients}
+\item{FUN, }{a probability distribution to generate coefficients}
 
 \item{flip, }{a bool parameter. If true, will randomly flip the sign of coefficients.}
 }

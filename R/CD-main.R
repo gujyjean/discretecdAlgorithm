@@ -51,7 +51,7 @@ NULL
 #'                  "\code{whitelist}" above for more details.
 #' @param error.tol Error tolerance for the algorithm, used to test for convergence.
 #' @param convLb Small positive number used in Hessian approximation.
-#' @param weight.scale A postitive number to scale weight matrix.
+#' @param weight.scale A positive number to scale weight matrix.
 #' @param upperbound A large positive value used to truncate the adaptive weights.
 #'                   A -1 value indicates that there is no truncation.
 #' @param alpha Threshold parameter used to terminate the algorithm whenever the number of edges in the
@@ -60,7 +60,7 @@ NULL
 #' @param adaptive A bool parameter, default value is FALSE. If FALSE, a regular lasso algorithm will be run.
 #'                 If TRUE, an adaptive lasso algorithm will be run.
 #' @return A \code{\link[sparsebnUtils]{sparsebnPath}} object.
-#'         The CD Algorithm will be stoped if the number of edges exceeds 3 times of number of variables.
+#'         The CD Algorithm will be stopped if the number of edges exceeds 3 times of number of variables.
 #' @examples
 #'
 #' \dontrun{

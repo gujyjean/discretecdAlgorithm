@@ -11,7 +11,7 @@ max_lambda(indata, weights = NULL, weight.scale = 1, upperbound = 100)
 
 \item{weights}{Weight matrix}
 
-\item{weight.scale}{A postitive number to scale weight matrix.}
+\item{weight.scale}{A positive number to scale weight matrix.}
 
 \item{upperbound}{A large positive value used to truncate the adaptive weights. A -1 value indicates that there is no truncation.}
 }

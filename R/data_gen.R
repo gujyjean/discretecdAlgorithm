@@ -93,7 +93,7 @@ datGen_call <- function(edge_list,
   }, maxdeg)
   ordex <- matrix(ordex, nrow = maxdeg)
 
-  if(!is.numeric(dataSize) || length(dataSize) > 1) stop("data_size must be a scaler!")
+  if(!is.numeric(dataSize) || length(dataSize) > 1) stop("data_size must be a scalar!")
   if(dataSize < 1) stop("data_size must be a positive integer!")
   dataSize <- as.integer(dataSize)
 
@@ -277,7 +277,7 @@ DatGen_cpp <- function(maxdeg,
 #'
 #' @param edge_list a \code{\link[sparsebnUtils]{edgeList}} object.
 #' @param n_levels, a list of number of levels for each node.
-#' @param FUN, a probability distrubution to generate coefficients
+#' @param FUN, a probability distribution to generate coefficients
 #' @param flip, a bool parameter. If true, will randomly flip the sign of coefficients.
 #' @return A list of coefficient matrix
 #' @export
@@ -321,7 +321,7 @@ coef_gen <- function(edge_list, n_levels = NULL, FUN=NULL, flip=TRUE) {
 #' A function that generate discrete data set.
 #'
 #' @param graph a \code{\link[sparsebnUtils]{edgeList}} object.
-#' @param n size of the data set, a scaler
+#' @param n size of the data set, a scalar
 #' @param ivn, a list of intervention for each data point.
 #' @param n_levels, a list of number of levels for each node, default is binary data set.
 #' @param params, coefficient list (optional).

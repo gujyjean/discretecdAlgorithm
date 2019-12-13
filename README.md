@@ -3,7 +3,7 @@ discretecdAlgorithm
 
 [![Build Status](https://travis-ci.org/gujyjean/discretecdAlgorithm.svg?branch=master)](https://travis-ci.org/gujyjean/discretecdAlgorithm)
 
-An algorithm to learn structure of discrete Bayesian network, this package can deal with observational data, interventional data, or a misture of both.
+An algorithm to learn structure of discrete Bayesian network, this package can deal with observational data, interventional data, or a mixture of both.
 
 algorithm
 ---------

@@ -17,7 +17,7 @@ data_gen(
 \arguments{
 \item{graph}{a \code{\link[sparsebnUtils]{edgeList}} object.}
 
-\item{n}{size of the data set, a scaler}
+\item{n}{size of the data set, a scalar}
 
 \item{ivn, }{a list of intervention for each data point.}
 

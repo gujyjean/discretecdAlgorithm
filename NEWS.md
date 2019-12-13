@@ -1,3 +1,12 @@
+# discretecdAlgorithm 0.0.6
+
+## Major changes
+
+None.
+
+## Bug fixes
+Update test file to cooperate with the new R version
+
 # discretecdAlgorithm 0.0.5
 
 ## Major changes
@@ -6,7 +15,7 @@
 
 * Added option for users to specify value of intervention in `generate_discrete_data()` function. 
 
-### Bug fixes
+## Bug fixes
 
 * `cd.run()` can now correctly take a list of intervention, whose element is node names.
 
@@ -34,7 +43,7 @@
 
 ## Major changes
 
-* Added option `adaptive` in `cd.run()` algorithm, so that users can run both adaptive cd algorithm and regular cd algorithm. With `adaptive = TRUE`, function run adaptive cd algorithm, whith `adaptive = FALSE`, function will run regular cd algorithm.
+* Added option `adaptive` in `cd.run()` algorithm, so that users can run both adaptive cd algorithm and regular cd algorithm. With `adaptive = TRUE`, function run adaptive cd algorithm, with `adaptive = FALSE`, function will run regular cd algorithm.
 
 ## Features
 
