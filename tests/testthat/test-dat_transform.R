@@ -8,7 +8,7 @@ VNum <- c(1.2, 3.4, 5.6, 7.8, 9.0)
 VStr <- c("TRUE", "FALSE", "TRUE", "TRUE", "TRUE")
 VLessChar <- c("X", "X", "Y", "Y", "Z")
 VLessChar <- factor(VLessChar, levels = c("W", "X", "Y", "Z"))
-data <- data.frame(VChar, VInt, VNum, VStr, VLessChar)
+data <- data.frame(VChar, VInt, VNum, VStr, VLessChar, stringsAsFactors = TRUE)
 
 level_list <- vector("list", length = 4)
 level_list[[1]] <- c("zero", "low", "median", "high")
