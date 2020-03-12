@@ -1,3 +1,12 @@
+# discretecdAlgorithm 0.0.7
+
+## Major changes
+
+None.
+
+## Bug fixes
+Update test file to cooperate with the new R version
+
 # discretecdAlgorithm 0.0.6
 
 ## Major changes
